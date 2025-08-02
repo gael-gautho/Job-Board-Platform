@@ -1,0 +1,67 @@
+export default function MyApplicationsPage() {
+	const applications = [
+		{
+			id: 1,
+			jobTitle: "Frontend Developer",
+			company: "Tech Corp",
+			dateApplied: "2025-07-20",
+			status: "Pending"
+		},
+		{
+			id: 2,
+			jobTitle: "Backend Developer",
+			company: "Dev Solutions",
+			dateApplied: "2025-07-10",
+			status: "Rejected"
+		},
+		{
+			id: 3,
+			jobTitle: "UI/UX Designer",
+			company: "Creative Studio",
+			dateApplied: "2025-07-05",
+			status: "Accepted"
+		}
+	];
+
+	return (
+		<div className="min-h-screen bg-gray-100 p-8">
+			<h1 className="text-3xl font-bold mb-6">My Applications</h1>
+			<div className="bg-white rounded-lg shadow-lg p-6">
+				<table className="w-full table-auto">
+					<thead>
+						<tr className="bg-gray-200 text-left">
+							<th className="p-3">Job Title</th>
+							<th className="p-3">Company</th>
+							<th className="p-3">Date Applied</th>
+							<th className="p-3">Status</th>
+							<th className="p-3">View Job</th>
+						</tr>
+					</thead>
+					<tbody>
+						{applications.map((app) => (
+							<tr key={app.id} className="border-b hover:bg-gray-50">
+								<td className="p-3 font-medium">{app.jobTitle}</td>
+								<td className="p-3">{app.company}</td>
+								<td className="p-3">{app.dateApplied}</td>
+								<td className={`p-3 font-semibold ${
+									app.status === "Accepted"
+										? "text-green-600"
+										: app.status === "Rejected"
+										? "text-red-600"
+										: "text-yellow-600"
+								}`}>
+									{app.status}
+								</td>
+								<td className="p-3">
+									<a href={`/jobs/${app.id}`} className="text-blue-600 underline hover:text-blue-800">
+										View
+									</a>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	);
+}
