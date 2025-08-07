@@ -38,6 +38,7 @@ export default function LoginPage() {
 		if (response.data.access) {
 			console.log(jwtDecode(response.data.access))
 			handleLogin(jwtDecode(response.data.access).user_id, response.access, response.refresh);	
+			setMessages([{ message: 'Login success ! You will be redirected ', type: 'success' }]);			
 			router.push('/')
 
 		} else {
