@@ -1,55 +1,99 @@
+'use server'
+import { cookies } from 'next/headers';
 
-const apiService = {
 
-post: async function(url, data) {
-    console.log('post', url, data);
+export async function handleRefresh() {
+    console.log('handleRefresh');
 
-    const token = await getAccessToken();
+    const refreshToken = await getRefreshToken();
+    console.log('Refresh token utilisé :', refreshToken);
 
-    return new Promise((resolve, reject) => {
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
-            method: 'POST',
-            body: data,
-            headers: {
-                'Authorization': `Bearer ${token}`
+    const token = await fetch('http://localhost:8000/refresh/', {
+        method: 'POST',
+        body: JSON.stringify({
+            refresh: refreshToken
+        }),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then((json) => {
+            console.log('Response - Refresh:', json);
+
+            if (json.access) {
+                cookies().set('session_access_token', json.access, {
+                    httpOnly: true,
+                    secure: false,
+                    maxAge: 60 * 60, // 60 minutes
+                    path: '/'
+                });
+
+                return json.access;
+            } else {
+                resetAuthCookies();
             }
         })
-            .then(response => response.json())
-            .then((json) => {
-                console.log('Response:', json);
+        .catch((error) => {
+            console.log('error', error);
 
-                resolve(json);
-            })
-            .catch((error => {
-                reject(error);
-            }))
+            resetAuthCookies();
         })
-    },
 
-    postWithoutToken: async function(url, data) {
-        console.log('post', url, data);
-
-        return new Promise((resolve, reject) => {
-            fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
-                method: 'POST',
-                body: data,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then((response) => {
-                    console.log('Response:', response);
-
-                    resolve(response);
-                })
-                .catch((error => {
-                    reject(error);
-                }))
-        })
-    }
-
+    return token;
 }
 
-export default apiService;
+export async function handleLogin(userId, accessToken, refreshToken) {
+    
+    cookies().set('session_userid', userId, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 60 * 60 * 24 * 7, // One week
+        path: '/'
+    });
 
+    cookies().set('session_access_token', accessToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 60 * 60, // 60 minutes
+        path: '/'
+    });
+
+    cookies().set('session_refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 60 * 60 * 24 * 7, // One week
+        path: '/'
+    });
+}
+
+
+export async function resetAuthCookies() {
+    cookies().set('session_userid', '');
+    cookies().set('session_access_token', '');
+    cookies().set('session_refresh_token', '');
+}
+
+
+
+// Get data
+
+export async function getUserId() {
+    const userId = cookies().get('session_userid')?.value
+    return userId ? userId : null
+}
+
+export async function getAccessToken() {
+    let accessToken = cookies().get('session_access_token')?.value;
+
+    if (!accessToken) {
+        accessToken = await handleRefresh();
+    }
+    return accessToken;
+}
+
+export async function getRefreshToken() {
+    let refreshToken = cookies().get('session_refresh_token')?.value;
+    return refreshToken;
+}

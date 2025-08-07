@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link';
 import { useState } from "react";
-import apiService from '@/app/libs/actions';
+import apiService from '@/app/libs/apiService';
 
 
 const SignupPage = () => {
@@ -40,9 +40,8 @@ const SignupPage = () => {
 			setMessages([{ message: 'The user is registered. Please check your email to activate your account.', type: 'success' }]);
 					
 		} else if (response.status === 400) {
-			const parsedResponse = await response.json()
 			
-			const tmpErrors = Object.values(parsedResponse).flat().map((response) => {
+			const tmpErrors = Object.values(response.data).flat().map((response) => {
 				return {
 				message: response,
 				type: 'error'
