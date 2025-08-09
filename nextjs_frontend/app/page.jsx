@@ -1,15 +1,35 @@
 "use client"
 
 import { useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
+import apiService from '@/app/libs/apiService';
+
 
 
 export default function Home() {
 	const [title, setTitle] = useState('');
 	const [location, setLocation] = useState('');
+	const [jobs, setJobs] = useState([]);	
 
-	// Dummy jobs
-	const jobs = [
+	const getJobs = async () => {
+        let url = '/get_joblist/';
+		const tmpJobs = await apiService.get(url)
+		console.log(tmpJobs)
+		tmpJobs && setJobs(tmpJobs.map((job) => {
+			return job
+		console.log(jobs)
+		}));
+	}
+	
+
+	useEffect( 
+		()=>{
+			getJobs();
+		}
+		,[])
+
+	const jobs2 = [
 		{
 			id: 1,
 			title: 'Frontend React Developer',
@@ -36,7 +56,6 @@ export default function Home() {
 	return (
 <div className="min-h-screen bg-gray-50">
 
-	{/* Hero + Search */}
 	<section className="py-16 px-4 text-center">
 		<h2 className="text-4xl font-bold text-gray-800 mb-4">
 			Find your next opportunity
@@ -72,21 +91,21 @@ export default function Home() {
 		</div>
 	</section>
 
-	{/* Recent Jobs */}
 	<section className="max-w-4xl mx-auto px-4 pb-16">
 		<h3 className="text-2xl font-semibold mb-6">Recent Job Listings</h3>
 
 		<div className="space-y-4">
-			{jobs.map(job => (
+			{jobs.length > 0 ? (
+			jobs.map(job => (
 				<div key={job.id}
 				className="flex justify-between bg-white p-5 rounded-lg shadow hover:shadow-md transition">
 					<div>
 					<h2 className="text-xl font-semibold">{job.title}</h2>
-					<p className="text-gray-600">{job.company_name} – {job.position_location}</p>
+					<p className="text-gray-600">{job.company_name} – {job.location}</p>
 					
 					
 					<span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
-						{job.position_location} • {job.date}
+						{job.experience_level} • {job.created_at}
 					</span>
 					</div>
 				
@@ -103,7 +122,9 @@ export default function Home() {
 					</div>
 
 				</div>
-			))}
+			))
+			) : (	<p>No jobs found.</p> )}
+
 		</div>
 	</section>
 </div>

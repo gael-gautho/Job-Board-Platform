@@ -1,10 +1,11 @@
 'use server'
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 
 export async function handleRefresh() {
     console.log('handleRefresh');
-
+    console.log(cookies().getAll());
     const refreshToken = await getRefreshToken();
     console.log('Refresh token utilisé :', refreshToken);
 
@@ -33,12 +34,14 @@ export async function handleRefresh() {
                 return json.access;
             } else {
                 resetAuthCookies();
+                redirect('/login');
             }
         })
         .catch((error) => {
             console.log('error', error);
 
             resetAuthCookies();
+            redirect('/login');
         })
 
     return token;
@@ -63,9 +66,12 @@ export async function handleLogin(userId, accessToken, refreshToken) {
     cookies().set('session_refresh_token', refreshToken, {
         httpOnly: true,
         secure: false,
-        maxAge: 60 * 60 * 24 * 7, // One week
+        maxAge: 60 * 60 * 24 * 1, // One day
         path: '/'
     });
+
+    console.log("------------",cookies().getAll());
+
 }
 
 
@@ -90,6 +96,7 @@ export async function getAccessToken() {
     if (!accessToken) {
         accessToken = await handleRefresh();
     }
+    console.log(accessToken)
     return accessToken;
 }
 
