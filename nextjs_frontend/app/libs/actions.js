@@ -49,6 +49,8 @@ export async function handleRefresh() {
 
 export async function handleLogin(userId, accessToken, refreshToken) {
     
+    console.log("1-----------",cookies().getAll());
+
     cookies().set('session_userid', userId, {
         httpOnly: true,
         secure: false,
@@ -96,7 +98,7 @@ export async function getAccessToken() {
     if (!accessToken) {
         accessToken = await handleRefresh();
     }
-    console.log(accessToken)
+    console.log(cookies().getAll())
     return accessToken;
 }
 

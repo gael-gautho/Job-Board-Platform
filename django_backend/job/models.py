@@ -26,9 +26,9 @@ class Job(models.Model):
     experience_level = models.CharField(max_length=50, choices=ExperienceLevel)
     description = models.TextField()
     location =  models.CharField(max_length=255, null=True, blank=True)
-    position_salary = models.CharField(max_length=255)    
+    salary = models.CharField(max_length=255)    
     deadline = models.DateField()
-    skills = models.CharField(max_length=255)
+    requirements = models.JSONField(default=list)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 

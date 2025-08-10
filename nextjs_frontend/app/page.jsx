@@ -22,36 +22,11 @@ export default function Home() {
 		}));
 	}
 	
-
 	useEffect( 
 		()=>{
 			getJobs();
 		}
 		,[])
-
-	const jobs2 = [
-		{
-			id: 1,
-			title: 'Frontend React Developer',
-			company_name: 'TechCorp',
-			position_location: 'Paris, France',
-			date: '2025-07-25',
-		},
-		{
-			id: 2,
-			title: 'UI/UX Designer',
-			company_name: 'Designify',
-			position_location: 'Lyon, France',
-			date: '2025-07-24',
-		},
-		{
-			id: 3,
-			title: 'Python Django Developer',
-			company_name: 'CodeWorks',
-			position_location: 'Remote',
-			date: '2025-07-22',
-		},
-	];
 
 	return (
 <div className="min-h-screen bg-gray-50">
@@ -116,7 +91,7 @@ export default function Home() {
 							<path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
 						</svg>
 
-                    	<Link href="/" className="py-4 px-6 bg-blue-600 text-white rounded-xl">
+                    	<Link href={`/jobs/${job.id}`} className="py-4 px-6 bg-blue-600 text-white rounded-xl">
 						Details
 						</Link>
 					</div>
