@@ -1,9 +1,10 @@
-import { getAccessToken } from "./actions";
+import { getAccessToken } from "../libs/actions";
 
 const apiService = {
 
 get: async function (url) {
     console.log('get', url);
+    
     const token = await getAccessToken();
 
     return new Promise((resolve, reject) => {

@@ -1,6 +1,7 @@
 'use server'
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 
 
 export async function handleRefresh() {
@@ -47,16 +48,18 @@ export async function handleRefresh() {
     return token;
 }
 
-export async function handleLogin(userId, accessToken, refreshToken) {
+export async function handleLogin(accessToken, refreshToken) {
     
     console.log("1-----------",cookies().getAll());
 
-    cookies().set('session_userid', userId, {
-        httpOnly: true,
-        secure: false,
-        maxAge: 60 * 60 * 24 * 7, // One week
-        path: '/'
-    });
+    // userInfo = jwtDecode(accessToken)
+
+    // cookies().set('session_userid', userInfo, {
+    //     httpOnly: true,
+    //     secure: false,
+    //     maxAge: 60 * 60 * 24 * 1, // One day
+    //     path: '/'
+    // });
 
     cookies().set('session_access_token', accessToken, {
         httpOnly: true,
@@ -78,6 +81,7 @@ export async function handleLogin(userId, accessToken, refreshToken) {
 
 
 export async function resetAuthCookies() {
+    console.log('resetAuthCookies')
     cookies().set('session_userid', '');
     cookies().set('session_access_token', '');
     cookies().set('session_refresh_token', '');
@@ -98,9 +102,10 @@ export async function getAccessToken() {
     if (!accessToken) {
         accessToken = await handleRefresh();
     }
-    console.log(cookies().getAll())
     return accessToken;
 }
+
+
 
 export async function getRefreshToken() {
     let refreshToken = cookies().get('session_refresh_token')?.value;
