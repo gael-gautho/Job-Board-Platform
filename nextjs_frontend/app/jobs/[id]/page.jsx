@@ -4,7 +4,7 @@ import apiService from "@/app/libs/apiService";
 
 const JobDetailPage = async ({params}) => {
 
-	const job = await apiService.get(`/get_jobdetail/${params.id}`)	
+	const job = await apiService.get(`/job/get_jobdetail/${params.id}`)	
 	
 	console.log(job)
 

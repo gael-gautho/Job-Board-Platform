@@ -1,6 +1,9 @@
 from django.db import models
 import uuid
 from account.models import User
+from django.utils import timezone
+from datetime import timedelta
+
 
 # Create your models here.
 
@@ -27,7 +30,7 @@ class Job(models.Model):
     description = models.TextField()
     location =  models.CharField(max_length=255, null=True, blank=True)
     salary = models.CharField(max_length=255)    
-    deadline = models.DateField()
+    deadline = models.DateField(default=lambda: timezone.now() + timedelta(days=30))
     requirements = models.JSONField(default=list)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

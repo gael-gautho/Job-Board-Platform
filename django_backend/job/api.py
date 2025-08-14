@@ -1,4 +1,6 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+
+from .forms import jobForm
 from .serializers import JobDetailSerializer, JobListSerializer
 from django.http import JsonResponse
 from .models import Job
@@ -10,11 +12,10 @@ from .models import Job
 def get_joblist(request):
 
     jobList = Job.objects.all()
-    Serializer = JobListSerializer(jobList, many = True)
+    serializer = JobListSerializer(jobList, many = True)
 
     return JsonResponse(
-        Serializer.data,
-        safe=False
+        {"data": serializer.data},
     )
 
 
@@ -22,9 +23,26 @@ def get_joblist(request):
 def get_jobdetail(request, pk):
     
     job = Job.objects.get(id=pk)
-    Serializer = JobDetailSerializer(job, many = False)
+    serializer = JobDetailSerializer(job, many = False)
 
     return JsonResponse(
-        Serializer.data,
+        {"data": serializer.data},
         safe=False
     )
+
+
+@api_view(['POST'])
+def create_job(request):
+
+    form = jobForm(request.data)
+
+    if form.is_valid():
+        job = form.save(commit=False)
+        job.created_by = request.user
+        job.save()
+
+        return JsonResponse({'status': 'created'})
+    else:
+        return JsonResponse({'errors': form.errors})
+
+

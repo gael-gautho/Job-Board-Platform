@@ -13,10 +13,10 @@ export default function Home() {
 	const [jobs, setJobs] = useState([]);	
 
 	const getJobs = async () => {
-        let url = '/get_joblist/';
+        let url = '/job/get_joblist/';
 		const tmpJobs = await apiService.get(url)
 		console.log(tmpJobs)
-		tmpJobs && setJobs(tmpJobs.map((job) => {
+		setJobs(tmpJobs.data?.map((job) => {
 			return job
 		console.log(jobs)
 		}));

@@ -41,7 +41,9 @@ post: async function(url, data) {
             method: 'POST',
             body: data,
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+
             }
         })
             .then(response => response.json())
