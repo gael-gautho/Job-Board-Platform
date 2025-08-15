@@ -4,8 +4,8 @@ import apiService from "@/app/libs/apiService";
 
 const JobDetailPage = async ({params}) => {
 
-	const job = await apiService.get(`/job/get_jobdetail/${params.id}`)	
-	
+	const tmpJob = await apiService.get(`/job/get_jobdetail/${params.id}`)	
+	const job = tmpJob.data
 	console.log(job)
 
 
@@ -33,7 +33,7 @@ const JobDetailPage = async ({params}) => {
 
 				<h3 className="text-lg font-semibold mt-6 mb-3">Requirements</h3>
 				<ul className="list-disc pl-6 text-gray-700">
-					{job.requirements.map((item, index) => (
+					{job.requirements?.map((item, index) => (
 						<li key={index}>{item}</li>
 					))}
 				</ul>

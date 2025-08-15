@@ -20,6 +20,17 @@ def get_joblist(request):
 
 
 @api_view(['GET'])
+def get_myjobs(request):
+
+    jobList = Job.objects.filter(created_by=request.user)
+    serializer = JobListSerializer(jobList, many = True)
+
+    return JsonResponse(
+        {"data": serializer.data},
+    )
+
+
+@api_view(['GET'])
 def get_jobdetail(request, pk):
     
     job = Job.objects.get(id=pk)
@@ -46,3 +57,9 @@ def create_job(request):
         return JsonResponse({'errors': form.errors})
 
 
+@api_view(['DELETE'])
+def delete_job(request, pk):
+        job = Job.objects.get(pk=pk, created_by=request.user)
+        job.delete()
+
+        return JsonResponse({'status': 'deleted'})

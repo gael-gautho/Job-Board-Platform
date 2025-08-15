@@ -21,11 +21,11 @@ export async function handleRefresh() {
         }
     })
         .then(response => response.json())
-        .then((json) => {
+        .then(async(json) => {
             console.log('Response - Refresh:', json);
 
             if (json.access) {
-                cookies().set('session_access_token', json.access, {
+                await cookies().set('session_access_token', json.access, {
                     httpOnly: true,
                     secure: false,
                     maxAge: 60 * 60, // 60 minutes
@@ -64,7 +64,7 @@ export async function handleLogin(accessToken, refreshToken) {
     cookies().set('session_access_token', accessToken, {
         httpOnly: true,
         secure: false,
-        maxAge: 60 * 60, // 60 minutes
+        maxAge: 60 * 1, // 1 minutes
         path: '/'
     });
 
@@ -98,10 +98,8 @@ export async function getUserId() {
 
 export async function getAccessToken() {
     let accessToken = cookies().get('session_access_token')?.value;
-
-    if (!accessToken) {
-        accessToken = await handleRefresh();
-    }
+    
+    
     return accessToken;
 }
 
