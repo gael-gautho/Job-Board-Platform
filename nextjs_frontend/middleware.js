@@ -31,7 +31,7 @@ export async function middleware(req) {
                 const res = NextResponse.redirect(req.url);
                 res.cookies.set('session_access_token', json.access, {
                     httpOnly: true,
-                    secure: false, // passe à true en prod
+                    secure: false, 
                     maxAge: 60 * 1, // 1 min
                     path: '/'
                 });
@@ -73,6 +73,7 @@ function isExpired(token) {
 
 export const config = {
     matcher: [
+        '/',
         '/jobs/:path*',
     ],
 };

@@ -6,6 +6,8 @@ from datetime import timedelta
 
 
 # Create your models here.
+def default_deadline():
+    return timezone.now() + timedelta(days=30)
 
 
 class Job(models.Model):
@@ -30,9 +32,9 @@ class Job(models.Model):
     description = models.TextField()
     location =  models.CharField(max_length=255, null=True, blank=True)
     salary = models.CharField(max_length=255)    
-    deadline = models.DateField(default=lambda: timezone.now() + timedelta(days=30))
+    deadline = models.DateField(default=default_deadline)
     requirements = models.JSONField(default=list)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    favorited_by = models.ManyToManyField(User, related_name='favorites', blank=True)
     
