@@ -1,10 +1,11 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-
+from datetime import timedelta
 from .forms import jobForm
 from .serializers import JobDetailSerializer, JobListSerializer
 from django.http import JsonResponse
 from .models import Job
 from django.db.models import Exists, OuterRef
+from django.utils import timezone
 
 
 
@@ -126,3 +127,44 @@ def toggle_favorite(request, pk):
     
     return JsonResponse({'data': serializer.data})
 
+
+@authentication_classes([])
+@permission_classes([])
+@api_view(['GET'])
+def search(request):
+
+    title = request.GET.get('title')
+    location = request.GET.get('location')
+    job_type = request.GET.get('jobType')
+    experience = request.GET.get('experience')
+    date_posted = request.GET.get('datePosted')
+
+    if title:
+        job = Job.objects.filter(title__icontains = title).annotate(
+        has_favorited=Exists(
+            Job.favorited_by.through.objects.filter(
+                job_id=OuterRef('pk'),
+                user_id=request.user.pk
+            )
+        )
+    )
+    
+    if location and location!="all":
+        job = job.filter(location__icontains = location)
+    
+    if job_type and job_type!="all":
+        job = job.filter(employment_type = job_type)
+
+    if experience and experience!="all":
+        job = job.filter(experience_level = experience)
+
+    if date_posted and date_posted!="all":
+        cutoff = timezone.now() - timedelta(days=int(date_posted))
+        print(cutoff)
+        job = job.filter(created_at__gte = cutoff)
+
+    serializer = JobListSerializer(job, many = True)
+
+    return JsonResponse({'data': serializer.data})
+
+    

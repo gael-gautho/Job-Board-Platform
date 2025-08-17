@@ -13,9 +13,10 @@ def default_deadline():
 class Job(models.Model):
 
     EmploymentType = [
-    ("Full Time", "Full Time"),
-    ("Part Time", "Part Time"),
-    ("Contract", "Contract")
+    ("Permanent", "Permanent"),
+    ("Temporary", "Temporary"),
+    ("Freelance", "Freelance"),
+    ("Internship", "Internship")
     ]
 
     ExperienceLevel = [

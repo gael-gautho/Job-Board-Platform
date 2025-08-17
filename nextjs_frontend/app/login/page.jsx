@@ -39,7 +39,7 @@ export default function LoginPage() {
 			handleLogin(response.data.access, response.data.refresh);	
 			setMessages([{ message: 'Login success ! You will be redirected ', type: 'success' }]);			
 			window.location.href = '/'
-			//router.refresh()
+			router.refresh()
 
 		} else {
 			const tmpErrors = Object.values(response.data).map((response) => {
