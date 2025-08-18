@@ -15,7 +15,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class UserSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = User
         fields = ('id', 'name', 'email','is_recruiter')
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('name', 'email','get_resume','desired_position','experience','location','get_photo')

@@ -37,7 +37,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255, blank=True, default='')
     is_recruiter = models.BooleanField(default=False)
-
+    desired_position = models.CharField(max_length=255, blank=True, null=True)
+    experience = models.PositiveIntegerField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True , null=True)
+    resume = models.FileField(upload_to='resumes/', blank=True, null=True)
+    photo = models.ImageField(upload_to='photos/', blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
@@ -51,3 +55,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
+
+    def get_photo(self):
+        if self.photo:
+            return settings.WEBSITE_URL + self.photo.url
+        else:
+            return 'http://127.0.0.1:8000/media/photos/blank-profile.png'
+
+
+    def get_resume(self):
+        if self.resume:
+            return settings.WEBSITE_URL + self.resume.url
+        else:
+            return 'no resume'

@@ -5,8 +5,9 @@ from . import api
 
 urlpatterns = [
     
-    path('me/', api.me, name='me'),
+    path('profile/', api.profile, name='me'),
     path('signup/', api.signup, name='signup'),
+    path('editprofile/', api.editprofile, name='signup'),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 

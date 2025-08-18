@@ -38,4 +38,3 @@ class Job(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     favorited_by = models.ManyToManyField(User, related_name='favorites', blank=True)
-    

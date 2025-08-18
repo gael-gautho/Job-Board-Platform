@@ -52,15 +52,6 @@ export async function handleLogin(accessToken, refreshToken) {
     
     console.log("1-----------",cookies().getAll());
 
-    // userInfo = jwtDecode(accessToken)
-
-    // cookies().set('session_userid', userInfo, {
-    //     httpOnly: true,
-    //     secure: false,
-    //     maxAge: 60 * 60 * 24 * 1, // One day
-    //     path: '/'
-    // });
-
     cookies().set('session_access_token', accessToken, {
         httpOnly: true,
         secure: false,
@@ -74,6 +65,8 @@ export async function handleLogin(accessToken, refreshToken) {
         maxAge: 60 * 60 * 24 * 1, // One day
         path: '/'
     });
+
+    redirect('/');
 
     console.log("------------",cookies().getAll());
 

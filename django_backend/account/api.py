@@ -1,19 +1,18 @@
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from .forms import SignupForm
+from .forms import EditProfileForm, SignupForm
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserProfileSerializer, UserSerializer
 
 
 
 @api_view(['GET'])
-def me(request):
+def profile(request):
     user = request.user 
-    serializer = UserSerializer(user, many = False)
+    serializer = UserProfileSerializer(user, many = False)
     return JsonResponse(
-        serializer.data,
-        safe = False
+        {"data": serializer.data},
     )
 
 
@@ -44,3 +43,15 @@ def signup(request):
         return JsonResponse( message,
                             status=status.HTTP_400_BAD_REQUEST, safe=False)
 
+@api_view(['POST'])
+def editprofile(request):
+    user = request.user
+
+    form = EditProfileForm(request.POST, request.FILES, instance=user)
+
+    if form.is_valid():
+        form.save()
+    
+    serializer = UserSerializer(user)
+
+    return JsonResponse({'message': 'information updated', 'user': serializer.data})
