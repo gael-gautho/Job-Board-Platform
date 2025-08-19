@@ -1,14 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import apiService from "../libs/apiService";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
-	const [profile, setProfile] = useState({
-		desired_position: "",
-		location: "",
-		years_of_experience: "",
-		cv: null,
-	});
+	const router = useRouter()
+	const [profile, setProfile] = useState({});
+	const [previewPhoto, setPreviewPhoto] = useState(null);
 
 	useEffect(() => {
 		const getProfile = async () => {
@@ -22,7 +20,7 @@ export default function ProfilePage() {
 		getProfile();
 	}, []);
 
-	const isOwner = false; 
+	const isOwner = true; 
 
 	const handleChange = (e) => {
 		const { name, value, files } = e.target;
@@ -34,7 +32,17 @@ export default function ProfilePage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		console.log("Submitting profile update:", profile);
+        const formData = new FormData();
+
+		profile.new_photo && formData.append('photo', profile.new_photo);
+		profile.desired_position && formData.append('desired_position', profile.desired_position);
+		profile.experience && formData.append('experience', profile.experience);
+		profile.location && formData.append('location', profile.location);
+		profile.new_resume && formData.append('resume', profile.new_resume);
+
+		const response = await apiService.post("/editprofile/", formData)
+		console.log("Submitting profile update:", formData);
+		window.location.reload();
 	};
 
 	return (
@@ -42,7 +50,7 @@ export default function ProfilePage() {
 			<div className="col-span-1">
 				<div className="p-4 bg-white border border-gray-200 text-center rounded-lg">
 					<img
-						src={profile.get_photo}
+						src={previewPhoto || profile.get_photo}
 						alt="Profile"
 						className="w-28 h-28 rounded-full object-cover mx-auto mb-6"
 					/>
@@ -52,9 +60,21 @@ export default function ProfilePage() {
 
 					<div className="mt-6 space-y-3">
 						{isOwner && (
+							<>
+							<label className="w-full block">
+								<span className="w-full inline-block py-2 bg-blue-600 text-white rounded-lg text-xs cursor-pointer hover:bg-blue-700">
+									Edit photo
+								</span> 
+								<input onChange={(e)=>{
+									setProfile((prev) => ({ ...prev, "new_photo": e.target.files[0] }))
+									setPreviewPhoto(URL.createObjectURL(e.target.files[0]));}} 
+								type="file" name="new_photo" accept="image/*" className="hidden" />
+							</label>
+							
 							<button className="w-full py-2 bg-red-600 text-white rounded-lg text-xs">
 								Log out
 							</button>
+							</>
 						)}
 					</div>
 				</div>
@@ -86,8 +106,8 @@ export default function ProfilePage() {
 							</label>
 							<input
 								type="number"
-								name="years_of_experience"
-								value={profile.years_of_experience || ""}
+								name="experience"
+								value={profile.experience || ""}
 								onChange={handleChange}
 								disabled={!isOwner}
 								className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm py-3 px-4 text-base disabled:bg-gray-100"
@@ -110,16 +130,14 @@ export default function ProfilePage() {
 						{isOwner ? (<>
 						<div>
 							<label className="block text-sm font-medium mb-1">
-								Upload CV
+								Resume
 							</label>
-							<input
-								type="file"
-								name="cv"
-								accept=".pdf,.doc,.docx"
-								onChange={handleChange}
-								disabled={!isOwner}
-								className="mt-1 block w-full py-2 text-base disabled:bg-gray-100"
-							/>
+
+							{ profile.get_resume && (  
+							<a href={profile.get_resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline" > View Resume </a>)
+							}
+
+							<input type="file" name="new_resume" accept=".pdf,.doc,.docx" onChange={handleChange} disabled={!isOwner} className="mt-1 block w-full py-2 text-base disabled:bg-gray-100" />
 						</div>
 					
 						<button
@@ -130,15 +148,8 @@ export default function ProfilePage() {
 						</button>
 						
 						</>
-						):( profile.resume && (  
-						<a
-							href={profile.cv} // ← Assure-toi que ton backend renvoie bien une URL
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-blue-600 underline"
-						>
-							View CV
-						</a>)
+						):( profile.get_resume && (  
+						<a href={profile.get_resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline" > View Resume </a>)
 						)}
 					</form>
 				</div>

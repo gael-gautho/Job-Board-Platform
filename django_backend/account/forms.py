@@ -13,4 +13,5 @@ class SignupForm(UserCreationForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('desired_position', 'experience', 'resume',)
+        fields = ('resume','desired_position','experience','location','photo')
+

@@ -52,6 +52,10 @@ def editprofile(request):
     if form.is_valid():
         form.save()
     
-    serializer = UserSerializer(user)
+        serializer = UserSerializer(user)
+        return JsonResponse({'message': 'information updated', 'user': serializer.data})
 
-    return JsonResponse({'message': 'information updated', 'user': serializer.data})
+    else:
+        message = form.errors
+        return JsonResponse( message,
+                            status=status.HTTP_400_BAD_REQUEST, safe=False)
