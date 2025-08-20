@@ -32,7 +32,14 @@ def get_joblist(request):
 @api_view(['GET'])
 def get_myjobs(request):
 
-    jobList = Job.objects.filter(created_by=request.user)
+    jobList = Job.objects.filter(created_by=request.user).annotate(
+        has_favorited=Exists(
+            Job.favorited_by.through.objects.filter(
+                job_id=OuterRef('pk'),
+                user_id=request.user.pk
+            )
+        )
+    )
     serializer = JobListSerializer(jobList, many = True)
 
     return JsonResponse(

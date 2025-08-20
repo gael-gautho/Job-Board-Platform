@@ -1,7 +1,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
-
+import { cookies } from "next/headers";
+import { UserProvider } from "./userContext";
+import { jwtDecode } from "jwt-decode";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -12,14 +14,16 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-
+  let userId = ""
+  const refreshToken = cookies().get("session_refresh_token")?.value
+  if (refreshToken) {userId = jwtDecode(refreshToken).user_id};
 
   return (
     <html lang="en">
       <body className={inter.className}>
         <Navbar/>
-                
-        {children}
+
+        <UserProvider userId={userId}>{children}</UserProvider>
         
       </body>
     </html>

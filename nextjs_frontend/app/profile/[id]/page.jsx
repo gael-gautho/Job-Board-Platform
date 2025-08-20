@@ -1,16 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
-import apiService from "../libs/apiService";
+import apiService from "@/app/libs/apiService";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/userContext";
 
-export default function ProfilePage() {
+
+export default function ProfilePage({params}) {
+	const userId = useUser();
 	const router = useRouter()
 	const [profile, setProfile] = useState({});
 	const [previewPhoto, setPreviewPhoto] = useState(null);
 
 	useEffect(() => {
 		const getProfile = async () => {
-			const tmpProfile = await apiService.get("/profile/");
+			const tmpProfile = await apiService.get(`/get_profile/${params.id}`);
 			tmpProfile.data &&
 				setProfile((prev) => ({
 					...prev,
@@ -20,7 +23,8 @@ export default function ProfilePage() {
 		getProfile();
 	}, []);
 
-	const isOwner = true; 
+	const isOwner = params.id == userId ; 
+
 
 	const handleChange = (e) => {
 		const { name, value, files } = e.target;
@@ -148,8 +152,14 @@ export default function ProfilePage() {
 						</button>
 						
 						</>
-						):( profile.get_resume && (  
-						<a href={profile.get_resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline" > View Resume </a>)
+						):( profile.get_resume && ( 
+						<>
+						<label className="block text-sm font-medium mb-1">
+							Resume
+						</label>
+						<a href={profile.get_resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline" > View Resume </a>
+						</>
+						)	
 						)}
 					</form>
 				</div>

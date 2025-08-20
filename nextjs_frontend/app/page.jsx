@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import apiService from '@/app/libs/apiService';
 import JobListItem from './components/JobListItem';
+import { useRouter } from 'next/navigation';
 
 
 export default function Home() {
+	const router = useRouter()
 	const [title, setTitle] = useState('');
 	const [location, setLocation] = useState('');
 	const [jobs, setJobs] = useState([]);	
@@ -57,7 +59,9 @@ export default function Home() {
 				<button
 					type="submit"
 					className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-					onClick={e => e.preventDefault()}
+					onClick={(e) =>{ e.preventDefault()
+				 	router.push(`/jobs/search?title=${encodeURIComponent(title)}&location=${encodeURIComponent(location)}`)		
+					}}
 				>
 					Search
 				</button>

@@ -8,8 +8,8 @@ from .serializers import UserProfileSerializer, UserSerializer
 
 
 @api_view(['GET'])
-def profile(request):
-    user = request.user 
+def get_profile(request, pk):
+    user = User.objects.get(pk=pk) 
     serializer = UserProfileSerializer(user, many = False)
     return JsonResponse(
         {"data": serializer.data},
