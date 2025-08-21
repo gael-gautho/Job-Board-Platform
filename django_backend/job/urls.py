@@ -9,6 +9,7 @@ urlpatterns = [
     path('search/', api.search, name='search'),
     path('get_jobdetail/<str:pk>', api.get_jobdetail, name='jobdetail'),
     path('create_job/', api.create_job, name='createjob'),
+    path('create_application/<str:pk>', api.create_application, name='createapliccation'),
     path('toggle_favorite/<str:pk>', api.toggle_favorite, name='togglefavorite'),
     path('delete_job/<str:pk>', api.delete_job, name='deletejob'),
 

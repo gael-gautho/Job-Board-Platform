@@ -14,11 +14,11 @@ class JobListSerializer(serializers.ModelSerializer):
 
 class JobDetailSerializer(serializers.ModelSerializer):
     
-    has_favorited = serializers.BooleanField()
+    has_applied = serializers.BooleanField()
 
     class Meta:
         model = Job 
         fields = ('id','title', 'company_name', 'employment_type', 'experience_level', 'location','created_at',
-       'salary','has_favorited', 'deadline', 'description', 'requirements')
+       'salary','has_applied', 'deadline', 'description', 'requirements')
         
          

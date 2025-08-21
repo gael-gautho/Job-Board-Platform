@@ -38,3 +38,32 @@ class Job(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     favorited_by = models.ManyToManyField(User, related_name='favorites', blank=True)
+
+
+
+
+
+class Application(models.Model):
+
+    STATUS_CHOICES = (
+        ('Sent', 'Sent'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    )
+
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+    message = models.TextField()
+    resume = models.FileField(upload_to="application_resume")
+    created_by = models.ForeignKey(User, related_name='my_applications', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Sent') 
+    job = models.ForeignKey(Job, related_name="applications", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+
+

@@ -1,11 +1,12 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from datetime import timedelta
-from .forms import jobForm
+from .forms import applicationForm, jobForm
 from .serializers import JobDetailSerializer, JobListSerializer
 from django.http import JsonResponse
-from .models import Job
+from .models import Application, Job
 from django.db.models import Exists, OuterRef
 from django.utils import timezone
+from rest_framework import status
 
 
 
@@ -69,12 +70,12 @@ def get_myfavorites(request):
 def get_jobdetail(request, pk):
     
     job = Job.objects.filter(id=pk).annotate(
-        has_favorited=Exists(
-            Job.favorited_by.through.objects.filter(
-                job_id=OuterRef('pk'),
-                user_id=request.user.pk
-            )
+    has_applied=Exists(
+        Application.objects.filter(
+            job_id=OuterRef('pk'),
+            created_by=request.user
         )
+    )
     ).first()
     serializer = JobDetailSerializer(job, many = False)
 
@@ -96,7 +97,9 @@ def create_job(request):
 
         return JsonResponse({'status': 'created'})
     else:
-        return JsonResponse({'errors': form.errors})
+        message = form.errors
+        return JsonResponse( message,
+                            status=status.HTTP_400_BAD_REQUEST, safe=False)
 
 
 @api_view(['DELETE'])
@@ -130,7 +133,7 @@ def toggle_favorite(request, pk):
         )
     ).first()
 
-    serializer = JobDetailSerializer(job, many = False)
+    serializer = JobListSerializer(job, many = False)
     
     return JsonResponse({'data': serializer.data})
 
@@ -174,4 +177,28 @@ def search(request):
 
     return JsonResponse({'data': serializer.data})
 
+
+
+@api_view(['POST'])
+def create_application(request, pk):
+
+    job = Job.objects.get(pk=pk)
+    form = applicationForm(request.POST, request.FILES)
+    existing_application = Application.objects.filter(created_by = request.user, job=job)
+
+    if not existing_application and form.is_valid():
+        application = form.save(commit=False)
+        application.created_by = request.user
+        application.job = job
+        application.save()
+
+        return JsonResponse({'status': 'created'})
+    else:
+        message = form.errors
+        return JsonResponse( message,
+                            status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+
+
+    
     

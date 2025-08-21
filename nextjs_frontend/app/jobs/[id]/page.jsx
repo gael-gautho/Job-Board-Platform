@@ -1,21 +1,49 @@
-
+'use client'
 import Link from "next/link";
 import apiService from "@/app/libs/apiService";
+import { useEffect, useState } from "react";
 
-const JobDetailPage = async ({params}) => {
+const JobDetailPage = ({params}) => {
 
-	const tmpJob = await apiService.get(`/job/get_jobdetail/${params.id}`)	
-	const job = tmpJob.data
-	console.log(job)
+	const [form, setForm] = useState({ fullname: "", email: "", message: "", resume: null, });
+	const [job, setJob] = useState(null);
+	const getJob = async () => {
+			const tmpJob = await apiService.get(`/job/get_jobdetail/${params.id}`)	
+			setJob(tmpJob.data)
+			console.log(job)
+		};
+
+	useEffect(() => {
+		getJob();
+	}, []);
+	
+	
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+        const formData = new FormData();
+        formData.append('name', form.fullname);
+        formData.append('email', form.email);
+        formData.append('message', form.message);
+        formData.append('resume', form.resume);
+
+		const response = await apiService.post(`/job/create_application/${params.id}`, formData);
+		console.log(response);
+		window.location.reload();
+
+	}
+
 
 
 	return (
-		<div className="max-w-5xl mx-auto py-12 px-4">
+		<div className="max-w-7xl mx-auto py-12 px-4">
 			<Link href="/jobs" className="text-blue-600 hover:underline mb-6 inline-block">
 				← Back to job listings
 			</Link>
 			{job && (
 			<>
+		<div className="max-w-7xl mx-auto grid grid-cols-4 gap-4 py-6">
+		<div className="col-span-3 space-y-4">
+
 			<div className="bg-white p-6 rounded-lg shadow mb-8">
 				<h1 className="text-3xl font-bold mb-2">{job.title}</h1>
 				<p className="text-gray-700 text-lg">{job.company_name} – {job.location}</p>
@@ -39,14 +67,79 @@ const JobDetailPage = async ({params}) => {
 				</ul>
 			</div>
 
-			<div className="flex gap-4">
-				<button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-					Apply Now
-				</button>
-				<button className="bg-gray-200 px-6 py-3 rounded-lg hover:bg-gray-300 transition">
-					Save Job
-				</button>
-			</div>
+		</div>
+
+		<div className="col-span-1">
+			<form
+              onSubmit={handleSubmit}
+              className="bg-white p-6 rounded-lg shadow space-y-4 sticky top-20"
+            >
+              <h2 className="text-xl font-semibold mb-4">Apply for this job</h2>
+
+              <div>
+                <label className="block text-sm font-medium">Name</label>
+                <input
+                  type="text"
+                  name="fullname"
+                  value={form.fullname}
+                  onChange={(e)=>{setForm((prev) => ({ ...prev, "fullname": e.target.value }))}  }
+                  className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={(e)=>{setForm((prev) => ({ ...prev, "email": e.target.value }))}  }
+                  className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Message</label>
+                <textarea
+                  name="message"
+                  value={form.message}
+                  onChange={(e)=>{setForm((prev) => ({ ...prev, "message": e.target.value }))}  }
+                  className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+                  rows={4}
+				  required
+				/>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Resume (PDF/DOC)</label>
+                <input
+                  type="file"
+                  name="resume"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e)=>{setForm((prev) => ({ ...prev, "resume": e.target.files[0] }))}  }
+                  className="mt-1 block w-full"
+                  required
+				/>
+              </div>
+			{job.has_applied ? (
+				  <p className="text-gray-600 font-medium">✅ Already applied</p>
+				):
+              (<button
+                type="submit"
+                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+              >
+                Submit Application
+              </button>)
+			  }
+            </form>
+
+		</div>
+
+
+
+		</div>
 			</>
 			)};
 
