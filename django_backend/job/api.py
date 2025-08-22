@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from datetime import timedelta
 from .forms import applicationForm, jobForm
-from .serializers import JobDetailSerializer, JobListSerializer
+from .serializers import ApplicationListSerializer, JobDetailSerializer, JobListSerializer
 from django.http import JsonResponse
 from .models import Application, Job
 from django.db.models import Exists, OuterRef
@@ -60,6 +60,16 @@ def get_myfavorites(request):
         )
     )
     serializer = JobListSerializer(favorites, many = True)
+
+    return JsonResponse(
+        {"data": serializer.data},
+    )
+
+@api_view(['GET'])
+def get_myapplications(request):
+    applications = Application.objects.filter(created_by = request.user)
+
+    serializer = ApplicationListSerializer(applications, many = True)
 
     return JsonResponse(
         {"data": serializer.data},

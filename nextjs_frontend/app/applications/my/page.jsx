@@ -1,27 +1,12 @@
-export default function MyApplicationsPage() {
-	const applications = [
-		{
-			id: 1,
-			jobTitle: "Frontend Developer",
-			company: "Tech Corp",
-			dateApplied: "2025-07-20",
-			status: "Pending"
-		},
-		{
-			id: 2,
-			jobTitle: "Backend Developer",
-			company: "Dev Solutions",
-			dateApplied: "2025-07-10",
-			status: "Rejected"
-		},
-		{
-			id: 3,
-			jobTitle: "UI/UX Designer",
-			company: "Creative Studio",
-			dateApplied: "2025-07-05",
-			status: "Accepted"
-		}
-	];
+import apiService from "@/app/libs/apiService";
+import Link from "next/link";
+
+
+export default async function MyApplicationsPage() {
+	
+	const tmpApplications = await apiService.get(`/job/get_myapplications/`)	
+	const applications = tmpApplications.data
+	console.log(applications)
 
 	return (
 		<div className="min-h-screen bg-gray-100 p-8">
@@ -40,9 +25,9 @@ export default function MyApplicationsPage() {
 					<tbody>
 						{applications.map((app) => (
 							<tr key={app.id} className="border-b hover:bg-gray-50">
-								<td className="p-3 font-medium">{app.jobTitle}</td>
-								<td className="p-3">{app.company}</td>
-								<td className="p-3">{app.dateApplied}</td>
+								<td className="p-3 font-medium">{app.job.title}</td>
+								<td className="p-3">{app.job.company_name}</td>
+								<td className="p-3">{app.created_at}</td>
 								<td className={`p-3 font-semibold ${
 									app.status === "Accepted"
 										? "text-green-600"
@@ -53,9 +38,9 @@ export default function MyApplicationsPage() {
 									{app.status}
 								</td>
 								<td className="p-3">
-									<a href={`/jobs/${app.id}`} className="text-blue-600 underline hover:text-blue-800">
+									<Link href={`/jobs/${app.job.id}`} className="text-blue-600 underline hover:text-blue-800">
 										View
-									</a>
+									</Link> 
 								</td>
 							</tr>
 						))}

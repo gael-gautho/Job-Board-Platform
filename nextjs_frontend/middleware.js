@@ -75,6 +75,7 @@ export const config = {
     matcher: [
         '/',
         '/jobs/:path*',
-        '/profile/:path*'
+        '/profile/:path*',
+        '/applications/:path*'
     ],
 };
