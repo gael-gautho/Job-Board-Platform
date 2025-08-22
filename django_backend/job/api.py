@@ -75,6 +75,17 @@ def get_myapplications(request):
         {"data": serializer.data},
     )
 
+@api_view(['GET'])
+def get_jobapplications(request, pk):
+
+    applications = Application.objects.filter(job__id = pk)
+
+    serializer = ApplicationListSerializer(applications, many = True)
+
+    return JsonResponse(
+        {"data": serializer.data},
+    )
+
 
 @api_view(['GET'])
 def get_jobdetail(request, pk):

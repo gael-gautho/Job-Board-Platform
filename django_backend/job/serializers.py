@@ -33,6 +33,6 @@ class ApplicationListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application 
-        fields = ('id','name','email','message','resume','created_at',
+        fields = ('id','name','email','message','get_resume','created_at',
                   'job', 'status')
    

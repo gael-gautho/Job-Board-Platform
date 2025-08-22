@@ -1,5 +1,6 @@
 'use client'
 import apiService from "@/app/libs/apiService";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 
@@ -45,9 +46,9 @@ export default function RecruiterJobsPage() {
 								
 								<td className="p-3">{job.total_applicants}</td>
 								<td className="p-3">
-									<a href={`/recruiter/jobs/${job.id}/applicants`} className="text-blue-600 underline hover:text-blue-800">
+									<Link href={`/applications/review/${job.id}`} className="text-blue-600 underline hover:text-blue-800">
 										View
-									</a>
+									</Link>
 								</td>
 								<td className="p-3 space-x-2">
 									<button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">

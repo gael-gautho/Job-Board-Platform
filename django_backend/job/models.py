@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 import uuid
 from account.models import User
@@ -46,7 +47,7 @@ class Job(models.Model):
 class Application(models.Model):
 
     STATUS_CHOICES = (
-        ('Sent', 'Sent'),
+        ('Pending', 'Pending'),
         ('Accepted', 'Accepted'),
         ('Rejected', 'Rejected'),
     )
@@ -58,11 +59,16 @@ class Application(models.Model):
     message = models.TextField()
     resume = models.FileField(upload_to="application_resume")
     created_by = models.ForeignKey(User, related_name='my_applications', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Sent') 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending') 
     job = models.ForeignKey(Job, related_name="applications", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+    def get_resume(self):
+        if self.resume:
+            return settings.WEBSITE_URL + self.resume.url
+        else:
+            return 'no resume'
 
 
 
