@@ -15,9 +15,17 @@ export default function ApplicationsReviewPage( {params}) {
     }, [])  
    
 
-    // const updateStatus = (id, newStatus) => {
-    //     setApplications()
-    // };
+    const reviewApplication = async (id, Status) => {
+        const response = await apiService.post(`/job/review_application/${id}/${ Status}/`)
+        const updatedApp = response.data;
+        setApplications(prev => {
+        const index = prev.findIndex(app => app.id === updatedApp.id);
+        if (index === -1) return prev;
+        const updated = [...prev];
+        updated[index] = updatedApp;
+        return updated;
+      });
+    };
 
     return (
     <div className="max-w-5xl mx-auto py-10 px-6">
@@ -69,13 +77,13 @@ export default function ApplicationsReviewPage( {params}) {
                 {app.status === "Pending" && (
                   <div className="mt-4 flex gap-3">
                     <button
-                      onClick={() => updateStatus(app.id, "Accepted")}
+                      onClick={() => reviewApplication(app.id, "Accepted")}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() => updateStatus(app.id, "Rejected")}
+                      onClick={() => reviewApplication(app.id, "Rejected")}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                     >
                       Reject

@@ -219,6 +219,22 @@ def create_application(request, pk):
         return JsonResponse( message,
                             status=status.HTTP_400_BAD_REQUEST, safe=False)
 
+@api_view(['POST'])
+def review_application(request, pk, status):
+
+    application = Application.objects.get(id=pk)
+   
+    if application.status == 'Pending':
+        application.status = status
+        application.save()
+
+    serializer = ApplicationListSerializer(application, many = False)
+
+    return JsonResponse(
+        {"data": serializer.data},
+    )
+        
+
 
 
     
