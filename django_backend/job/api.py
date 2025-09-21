@@ -9,10 +9,9 @@ from django.utils import timezone
 from rest_framework import status
 
 
-
+@api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
-@api_view(['GET'])
 def get_joblist(request):
 
     jobList = Job.objects.all().annotate(
