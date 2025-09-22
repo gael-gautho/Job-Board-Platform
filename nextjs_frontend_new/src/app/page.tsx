@@ -29,7 +29,10 @@ export default async function Home() {
       {/* Jobs */}
       <section className="max-w-4xl mx-auto px-4 pb-16">
         <h3 className="text-2xl font-semibold mb-6">Recent Job Listings</h3>
+        
+        <div className="space-y-4">
         <JobList initialJobs={jobs} />
+        </div>
       </section>
     </div>
   );

@@ -4,7 +4,7 @@ from .forms import applicationForm, jobForm
 from .serializers import ApplicationListSerializer, JobDetailSerializer, JobListSerializer
 from django.http import JsonResponse
 from .models import Application, Job
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Value, BooleanField
 from django.utils import timezone
 from rest_framework import status
 
@@ -87,16 +87,25 @@ def get_jobapplications(request, pk):
 
 
 @api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
 def get_jobdetail(request, pk):
     
-    job = Job.objects.filter(id=pk).annotate(
-    has_applied=Exists(
-        Application.objects.filter(
-            job_id=OuterRef('pk'),
-            created_by=request.user
+    job = Job.objects.filter(id=pk)
+    
+    if request.user.is_authenticated:
+        job = job.annotate(
+            has_applied=Exists(
+                Application.objects.filter(
+                    job_id=OuterRef('pk'),
+                    created_by=request.user
+                )
+            )
         )
-    )
-    ).first()
+    else:
+        job = job.annotate(has_applied=Value(False, output_field=BooleanField()))
+
+    job = job.first()
     serializer = JobDetailSerializer(job, many = False)
 
     return JsonResponse(
@@ -157,10 +166,9 @@ def toggle_favorite(request, pk):
     
     return JsonResponse({'data': serializer.data})
 
-
+@api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
-@api_view(['GET'])
 def search(request):
 
     title = request.GET.get('title')

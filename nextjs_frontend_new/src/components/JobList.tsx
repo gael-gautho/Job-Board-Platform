@@ -18,12 +18,12 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   };
 
   return (
-    <div className="space-y-4">
-      {jobs.map(job => (
+    <>
+      {jobs?.map(job => (
         <div key={job.id} className="flex justify-between bg-white p-5 rounded-lg shadow hover:shadow-md transition">
           <JobListItem job={job} onToggleFavorite={toggleFavorite} />
         </div>
       ))}
-    </div>
+    </>
   );
 }

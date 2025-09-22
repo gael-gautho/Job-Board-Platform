@@ -5,10 +5,15 @@ export interface Job {
   title: string;
   company_name: string;
   location: string;
-  experience_level: string;
+  employment_type: string;
+  experience_type: string;
+  salary: string;
   created_at: string;
-  has_favorited: boolean;
+  description: string;
+  requirements: string[];
+  has_applied: boolean;
 }
+
 
 export interface MyJwtPayload {
   user_id: string;
