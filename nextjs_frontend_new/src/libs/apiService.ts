@@ -44,7 +44,7 @@ post: async function(url: string, data: any): Promise<any> {
             body: data,
             headers: {
                 'Authorization': `Bearer ${token}`,
-                //'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
 
             }
         })
