@@ -17,6 +17,18 @@ export interface Job {
 }
 
 
+export interface Application {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+  status: string;
+  job: Job;
+  
+}
+
+
 export interface MyJwtPayload {
   user_id: string;
   is_recruiter: boolean; 

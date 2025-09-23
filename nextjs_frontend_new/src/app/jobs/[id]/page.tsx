@@ -1,6 +1,5 @@
 import { Job } from '@/types';
 import apiService from '@/libs/apiService';
-//import JobDetail from '@/components/JobDetail';
 import JobApplicationForm from '@/components/JobApplicationForm';
 import Link from 'next/link';
 
@@ -43,7 +42,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 			</div>
 		</div>  
 
-      <JobApplicationForm jobId={params.id} initialHasApplied={job.has_applied} />
+      <JobApplicationForm jobId={id} initialHasApplied={job.has_applied} />
     </div>
 )};
     

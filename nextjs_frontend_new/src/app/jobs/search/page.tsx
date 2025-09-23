@@ -14,12 +14,12 @@ type JobResultsPageProps = {
 };
 
 export default async function JobResultsPage({ searchParams }: JobResultsPageProps) {
-    
-    const title = searchParams.title || "";
-    const location = searchParams.location || "";
-    const datePosted = searchParams.datePosted || "all";
-    const experience = searchParams.experience || "all";
-    const jobType = searchParams.jobType || "all";
+
+    const title = (await searchParams).title || "";
+    const location = (await searchParams).location || "";
+    const datePosted = (await searchParams).datePosted || "all";
+    const experience = (await searchParams).experience || "all";
+    const jobType = (await searchParams).jobType || "all";
 
     const response = await apiService.get(
       `/job/search/?title=${title}&location=${location}&jobType=${jobType}&experience=${experience}&datePosted=${datePosted}`
