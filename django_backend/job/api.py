@@ -1,9 +1,11 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import AccessToken
 from datetime import timedelta
 from .forms import applicationForm, jobForm
 from .serializers import ApplicationListSerializer, JobDetailSerializer, JobListSerializer
 from django.http import JsonResponse
-from .models import Application, Job
+from .models import Application, Job, User
 from django.db.models import Exists, OuterRef, Value, BooleanField
 from django.utils import timezone
 from rest_framework import status
@@ -14,14 +16,31 @@ from rest_framework import status
 @permission_classes([])
 def get_joblist(request):
 
-    jobList = Job.objects.all().annotate(
-        has_favorited=Exists(
-            Job.favorited_by.through.objects.filter(
-                job_id=OuterRef('pk'),
-                user_id=request.user.pk
+    # Auth
+    try:
+        token = request.META['HTTP_AUTHORIZATION'].split('Bearer ')[1]
+        token = AccessToken(token)
+        user_id = token.payload['user_id']
+        user = User.objects.get(pk=user_id)
+    except Exception as e:
+        print("Erreur lors du décodage du token:", e)
+        user = None
+
+    print(request.user)
+
+    if user:
+        jobList = Job.objects.all().annotate(
+            has_favorited=Exists(
+                Job.favorited_by.through.objects.filter(
+                    job_id=OuterRef('pk'),
+                    user_id=user_id
+                )
             )
         )
-    )
+    else:
+        jobList = Job.objects.all().annotate(
+            has_favorited=Value(False, output_field=BooleanField())
+        )
     serializer = JobListSerializer(jobList, many = True)
 
     return JsonResponse(
@@ -91,14 +110,24 @@ def get_jobapplications(request, pk):
 @permission_classes([])
 def get_jobdetail(request, pk):
     
+    # Auth
+    try:
+        token = request.META['HTTP_AUTHORIZATION'].split('Bearer ')[1]
+        token = AccessToken(token)
+        user_id = token.payload['user_id']
+        user = User.objects.get(pk=user_id)
+    except Exception as e:
+        print("Erreur lors du décodage du token:", e)
+        user = None
+
     job = Job.objects.filter(id=pk)
     
-    if request.user.is_authenticated:
+    if user:
         job = job.annotate(
             has_applied=Exists(
                 Application.objects.filter(
                     job_id=OuterRef('pk'),
-                    created_by=request.user
+                    created_by=user
                 )
             )
         )
@@ -171,21 +200,38 @@ def toggle_favorite(request, pk):
 @permission_classes([])
 def search(request):
 
+    # Auth
+    try:
+        token = request.META['HTTP_AUTHORIZATION'].split('Bearer ')[1]
+        token = AccessToken(token)
+        user_id = token.payload['user_id']
+        user = User.objects.get(pk=user_id)
+    except Exception as e:
+        print("Erreur lors du décodage du token:", e)
+        user = None
+
     title = request.GET.get('title')
     location = request.GET.get('location')
     job_type = request.GET.get('jobType')
     experience = request.GET.get('experience')
     date_posted = request.GET.get('datePosted')
 
-    if title:
-        job = Job.objects.filter(title__icontains = title).annotate(
-        has_favorited=Exists(
-            Job.favorited_by.through.objects.filter(
-                job_id=OuterRef('pk'),
-                user_id=request.user.pk
+    job = Job.objects.all()
+
+    if user:
+        job = job.annotate(
+            has_favorited=Exists(
+                Job.favorited_by.through.objects.filter(
+                    job_id=OuterRef('pk'),
+                    user_id=user_id
+                )
             )
         )
-    )
+    else:
+        job = job.annotate( has_favorited=Value(False, output_field=BooleanField()) )
+
+    if title:
+        job = Job.objects.filter(title__icontains = title)
     
     if location and location!="all":
         job = job.filter(location__icontains = location)

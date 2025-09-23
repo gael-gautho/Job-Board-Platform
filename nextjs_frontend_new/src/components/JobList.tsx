@@ -10,7 +10,7 @@ export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
 
   const toggleFavorite = async (jobId: string) => {
     try {
-      const response = await apiService.post(`/job/toggle_favorite/${jobId}`,'');
+      const response = await apiService.fetch_proxy('POST',`/job/toggle_favorite/${jobId}/`,'');
       setJobs(jobs.map(job => job.id === jobId ? response.data : job));
     } catch (error) {
       console.error("Erreur:", error);

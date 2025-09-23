@@ -3,14 +3,19 @@ import { jwtDecode } from 'jwt-decode';
 import { NextRequest, NextResponse } from 'next/server';
 import { MyJwtPayload } from './types';
 
+const publicPaths = ['/', '/jobs/[id]', '/jobs/search'];
+
 export async function middleware(req: NextRequest) {
+    
+    const path = req.nextUrl.pathname;
+    const isPublicPath = publicPaths.includes(path);
+
     let accessToken = req.cookies.get('session_access_token')?.value;
     const refreshToken = req.cookies.get('session_refresh_token')?.value;
 
     console.log("-----in middleware")
     // Si on a déjà un access token valide → continuer
     if (accessToken && !isExpired(accessToken)) {
-
         return NextResponse.next();
     }
     
@@ -60,7 +65,7 @@ export async function middleware(req: NextRequest) {
         response.cookies.delete('session_refresh_token');
         return response;
 
-    } else {
+    } else if ( !isPublicPath ) {
         // Pour les navigations de page, on redirige vers le login.
         console.log(`[Middleware] Page navigation to ${req.nextUrl.pathname} redirected to /login.`);
         const loginUrl = new URL('/login', req.url);
@@ -70,6 +75,9 @@ export async function middleware(req: NextRequest) {
         response.cookies.delete('session_refresh_token');
         return response;
     }
+
+    return NextResponse.next();
+
 }
 
 function isExpired(token: string) {
@@ -85,9 +93,9 @@ function isExpired(token: string) {
 
 export const config = {
     matcher: [
-        '/jobs/create',
-        '/jobs/myfavorites',
-        '/jobs/myjobs',
+        '/',
+        '/api/:path*',
+        '/jobs/:path*',
         '/profile/:path*',
         '/applications/:path*'
     ],

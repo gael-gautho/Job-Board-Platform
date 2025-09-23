@@ -124,7 +124,7 @@ fetch_proxy : async function (method: string, url: string , data?: any): Promise
       body: method === "GET" || method === "HEAD" ? undefined : JSON.stringify(data)
     };
 
-    const response = await fetch(`/api/${url}`, options);
+    const response = await fetch(`/api${url}`, options);
     
     if (response.status === 401) {
         redirect('/login'); 
