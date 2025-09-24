@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { jwtDecode } from "jwt-decode";
 import { MyJwtPayload } from "@/types";
 import { cookies } from "next/headers";
+import { UserProvider } from "./userContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,9 +52,11 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <Navbar key={user_id} />       */}
-        <Navbar/>      
+      <UserProvider userInfo ={{ user_id, is_recruiter }}>
+        <Navbar key={user_id} />      
         {children}
+      </UserProvider>
+        
         <Toaster position="top-right" richColors />
 
       </body>

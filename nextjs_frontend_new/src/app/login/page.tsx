@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (response.data.access) {
         handleLogin(response.data.access, response.data.refresh);
         setMessages([{ message: 'Login success! You will be redirected.', type: 'success' }]);
-        router.push('/'); // Redirection après succès
+        //router.push('/'); // Redirection après succès
       } else {
         const tmpErrors: Message[] = Object.values(response.data)
           .map((error: any) => ({ message: error, type: 'error' }));

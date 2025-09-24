@@ -50,13 +50,3 @@ export default async function JobDetailPage({ params }: { params: { id: string }
     </div>
   );
 }
-
-async function getJob(id: string): Promise<Job> {
-  try {
-    const response = await apiService.get(`/job/get_jobdetail/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching job details:", error);
-    throw new Error("Failed to fetch job details");
-  }
-}

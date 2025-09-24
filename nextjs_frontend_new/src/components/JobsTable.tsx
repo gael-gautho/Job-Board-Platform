@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import apiService from "@/libs/apiService";
 import { Job } from "@/types";
+import { toast } from "sonner";
 
 interface JobsTableProps {
   initialJobs: Job[];
@@ -15,7 +16,12 @@ export default function JobsTable({ initialJobs }: JobsTableProps) {
     try {
       const response = await apiService.delete(`/job/delete_job/${id}`);
       console.log(response);
-      setJobs(prev => prev.filter(job => job.id !== id));
+      
+      if (response.status === 'deleted') {
+        setJobs(prev => prev.filter(job => job.id !== id));
+        toast.success('Job deleted successfully')
+      }
+    
     } catch (error) {
       console.error('Error deleting job:', error);
     }

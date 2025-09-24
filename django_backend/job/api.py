@@ -26,8 +26,6 @@ def get_joblist(request):
         print("Erreur lors du décodage du token:", e)
         user = None
 
-    print(request.user)
-
     if user:
         jobList = Job.objects.all().annotate(
             has_favorited=Exists(

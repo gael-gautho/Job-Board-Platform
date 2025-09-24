@@ -1,5 +1,8 @@
 'use server'
+import { MyJwtPayload } from '@/types';
+import { jwtDecode } from 'jwt-decode';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 
 export async function handleLogin(accessToken: string, refreshToken: string) {
@@ -16,7 +19,8 @@ export async function handleLogin(accessToken: string, refreshToken: string) {
         maxAge: 60 * 60 * 24 * 1, // One day
         path: '/'
     });
-    //redirect('/');
+    
+    redirect('/');
 }
 
 export async function getAccessToken() {
@@ -24,10 +28,23 @@ export async function getAccessToken() {
     return accessToken;
 }
 
+export async function getUserInfo() {
+    let user_id = "";
+    let is_recruiter = false;
+
+    const refreshToken = (await cookies()).get("session_refresh_token")?.value
+    
+    if (refreshToken) {
+    user_id = jwtDecode<MyJwtPayload>(refreshToken).user_id
+    is_recruiter = jwtDecode<MyJwtPayload>(refreshToken).is_recruiter
+    };
+    
+    return {user_id, is_recruiter};
+}
+
 export async function logoutUser() {
   const cookieStore = await cookies();
   cookieStore.delete('session_access_token');
   cookieStore.delete('session_refresh_token');
-
-  //redirect('/');
+  redirect('/');
 }

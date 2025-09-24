@@ -4,61 +4,148 @@ import { redirect } from 'next/navigation';
 
 const apiService = {
 
-get: async function (url: string): Promise<any> {
-    console.log('get', url);
+// get: async function (url: string): Promise<any> {
+//     console.log('get', url);
     
-    const token = await getAccessToken();
+//     const token = await getAccessToken();
 
-    return new Promise((resolve, reject) => {
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+//     return new Promise((resolve, reject) => {
+//         fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+//             method: 'GET',
+//             headers: {
+//                 'Accept': 'application/json',
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
 
+//             }
+//         })
+//             .then(response => response.json())
+//             .then((json) => {
+//                 console.log('Response:', json);
+
+//                 resolve(json);
+//             })
+//             .catch((error => {
+//                 reject(error);
+//             }))
+//     })
+// },
+
+
+
+// post: async function(url: string, data: any): Promise<any> {
+//     console.log('post', url, data);
+
+//     const token = await getAccessToken();
+
+//     return new Promise((resolve, reject) => {
+//         fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+//             method: 'POST',
+//             body: data,
+//             headers: {
+//                 'Authorization': `Bearer ${token}`,
+//                 'Content-Type': 'application/json'
+
+//             }
+//         })
+//             .then(response => response.json())
+//             .then((json) => {
+//                 console.log('Response:', json);
+
+//                 resolve(json);
+//             })
+//             .catch((error => {
+//                 reject(error);
+//             }))
+//         })
+//     },
+
+// delete: async function (url: string): Promise<any> {
+//     console.log('delete', url);
+    
+//     const token = await getAccessToken();
+
+//     return new Promise((resolve, reject) => {
+//         fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+//             method: 'DELETE',
+//             headers: {
+//                 'Accept': 'application/json',
+//                 // 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
+
+//             }
+//         })
+//             .then(response => response.json())
+//             .then((json) => {
+//                 console.log('Response:', json);
+
+//                 resolve(json);
+//             })
+//             .catch((error => {
+//                 reject(error);
+//             }))
+//     })
+// },
+
+
+
+async _request(url: string, method: string, data?: any): Promise<any> {
+        const token = await getAccessToken();
+        const options: RequestInit = { method };
+
+        const headers = new Headers();
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
+        }
+
+        if (data) {
+            if (data instanceof FormData) {
+                options.body = data;
+            } else {
+                headers.append('Content-Type', 'application/json');
+                options.body = JSON.stringify(data);
             }
-        })
-            .then(response => response.json())
-            .then((json) => {
-                console.log('Response:', json);
+        }
+        options.headers = headers;
 
-                resolve(json);
-            })
-            .catch((error => {
-                reject(error);
-            }))
-    })
-},
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, options);
 
-
-
-post: async function(url: string, data: any): Promise<any> {
-    console.log('post', url, data);
-
-    const token = await getAccessToken();
-
-    return new Promise((resolve, reject) => {
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
-            method: 'POST',
-            body: data,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
+                throw new Error(`Erreur HTTP ${response.status}: ${errorData.detail || errorData.message}`);
             }
-        })
-            .then(response => response.json())
-            .then((json) => {
-                console.log('Response:', json);
 
-                resolve(json);
-            })
-            .catch((error => {
-                reject(error);
-            }))
-        })
+            if (response.status === 204) { 
+                return null;
+            }
+
+            const json = await response.json();
+            console.log('Response:', json);
+            return json;
+
+        } catch (error) {
+            console.error(`Erreur de l'API (${method} ${url}):`, error);
+            throw error; 
+        }
     },
+
+    get: function(url: string): Promise<any> {
+        return this._request(url, 'GET');
+    },
+
+    post: function(url: string, data: any): Promise<any> {
+        return this._request(url, 'POST', data);
+    },
+
+    delete: function(url: string): Promise<any> {
+        return this._request(url, 'DELETE');
+    },
+    
+    put: function(url: string, data: any): Promise<any> {
+        return this._request(url, 'PUT', data);
+    },
+
 
 postWithoutToken: async function(url: string, data: any): Promise<any> {
     console.log('post', url, data);
@@ -79,33 +166,6 @@ postWithoutToken: async function(url: string, data: any): Promise<any> {
                 status: response.status,
                 data: parsedResponse
                 });
-            })
-            .catch((error => {
-                reject(error);
-            }))
-    })
-},
-
-delete: async function (url: string): Promise<any> {
-    console.log('delete', url);
-    
-    const token = await getAccessToken();
-
-    return new Promise((resolve, reject) => {
-        fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                // 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-
-            }
-        })
-            .then(response => response.json())
-            .then((json) => {
-                console.log('Response:', json);
-
-                resolve(json);
             })
             .catch((error => {
                 reject(error);
@@ -154,4 +214,5 @@ fetch_proxy : async function (method: string, url: string , data?: any): Promise
 }
 
 export default apiService;
+
 
