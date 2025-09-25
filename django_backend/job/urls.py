@@ -15,5 +15,6 @@ urlpatterns = [
     path('review_application/<str:pk>/<str:status>/', api.review_application, name='review_application'),    
     path('toggle_favorite/<str:pk>/', api.toggle_favorite, name='togglefavorite'),
     path('delete_job/<str:pk>', api.delete_job, name='deletejob'),
+    path('edit_job/<str:pk>/', api.edit_job, name='editjob'),
 
 ]

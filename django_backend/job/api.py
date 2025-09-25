@@ -151,10 +151,28 @@ def create_job(request):
         job.created_by = request.user
         job.save()
 
-        return JsonResponse({'status': 'created'})
+        return JsonResponse({'success': 'created'})
     else:
         message = form.errors
-        return JsonResponse( message,
+        return JsonResponse( {'error': message},
+                            status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+
+@api_view(['PUT'])
+def edit_job(request, pk):
+    job = Job.objects.get(pk=pk, created_by=request.user)
+
+    form = jobForm(request.data, instance=job)
+    print(job)
+
+    if form.is_valid():
+        form.save()
+    
+        return JsonResponse({'success': 'information updated'})
+
+    else:
+        message = form.errors
+        return JsonResponse( {'error': message},
                             status=status.HTTP_400_BAD_REQUEST, safe=False)
 
 

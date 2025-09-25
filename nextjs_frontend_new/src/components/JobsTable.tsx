@@ -54,9 +54,9 @@ export default function JobsTable({ initialJobs }: JobsTableProps) {
                 </Link>
               </td>
               <td className="p-3 space-x-2">
-                <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+                <Link className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" href={`/jobs/edit/${job.id}`}>
                   Edit
-                </button>
+                </Link>
                 <button 
                   onClick={() => handleDelete(job.id)}
                   className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"

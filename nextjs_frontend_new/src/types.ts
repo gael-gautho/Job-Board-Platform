@@ -6,7 +6,7 @@ export interface Job {
   company_name: string;
   location: string;
   employment_type: string;
-  experience_type: string;
+  experience_level: string;
   salary: string;
   created_at: string;
   description: string;

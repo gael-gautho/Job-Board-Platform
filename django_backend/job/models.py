@@ -40,6 +40,9 @@ class Job(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     favorited_by = models.ManyToManyField(User, related_name='favorites', blank=True)
 
+    @property
+    def total_applicants(self):
+        return self.applications.count()
 
 
 

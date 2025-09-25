@@ -23,7 +23,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 				<p className="text-gray-700 text-lg">{job.company_name} – {job.location}</p>
 				<div className="mt-3 flex flex-wrap gap-2">
 					<span className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">{job.employment_type}</span>
-					<span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm">{job.experience_type}</span>
+					<span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm">{job.experience_level}</span>
 					<span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-sm">{job.salary}</span>
 				</div>
 				<p className="text-gray-500 mt-3 text-sm">Posted on {job.created_at}</p>
