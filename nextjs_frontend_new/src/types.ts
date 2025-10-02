@@ -12,6 +12,7 @@ export interface Job {
   description: string;
   requirements: string[];
   has_applied: boolean;
+  has_favorited: boolean;
   total_applicants: number;
 
 }
