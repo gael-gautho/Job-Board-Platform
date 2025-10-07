@@ -8,7 +8,7 @@ const publicPaths = ['/', '/jobs/[id]', '/jobs/search'];
 export async function middleware(req: NextRequest) {
     
     const path = req.nextUrl.pathname;
-    const isPublicPath = publicPaths.includes(path);
+    const isPublicPath = publicPaths.includes(path) || path.startsWith('/jobdetail/');
 
     let accessToken = req.cookies.get('session_access_token')?.value;
     const refreshToken = req.cookies.get('session_refresh_token')?.value;
@@ -96,6 +96,7 @@ export const config = {
         '/',
         '/api/:path*',
         '/jobs/:path*',
+        '/jobdetail/:path*',
         '/profile/:path*',
         '/applications/:path*'
     ],

@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent } from "react";
 import apiService from "@/libs/apiService";
+import { toast } from "sonner";
 
 type FormData = {
   fullname: string;
@@ -51,33 +52,33 @@ export default function JobApplicationForm({
     setIsSubmitting(true);
     setSubmitStatus(null);
 
-    try {
+
       const formData = new FormData();
       formData.append('name', form.fullname);
       formData.append('email', form.email);
       formData.append('message', form.message);
       if (form.resume) { formData.append('resume', form.resume); }
 
-      const response = await apiService.post( `/job/create_application/${jobId}`, formData,);
+      const response = await apiService.fetch_proxy('POST', `/job/create_application/${jobId}`, formData,);
 
-      setSubmitStatus({ success: true, message: "Application submitted successfully!" });
-      setHasApplied(true);
+      if (response.status === 'created'){
 
-      setForm({
+        toast.success("Application submitted successfully!" );
+        setHasApplied(true);
+
+        setForm({
         fullname: "",
         email: "",
         message: "",
         resume: null,
       });
-    } catch (error) {
-      console.error("Error submitting application:", error);
-      setSubmitStatus({
-        success: false,
-        message: "Failed to submit application. Please try again."
-      });
-    } finally {
+
+      } else {
+        toast.error("Failed to submit application. Please try later.")
+      }
+    
       setIsSubmitting(false);
-    }
+
   };
 
   return (

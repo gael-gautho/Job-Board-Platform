@@ -29,9 +29,9 @@ const Navbar = async () => {
                 <Link href={`/profile/${userInfo?.user_id}`} className="text-gray-700 hover:text-blue-600">My profile</Link>
                 </>  ) : (
                 <>            
-                <Link href="/myfavorites" className="text-gray-700 hover:text-blue-600">My favorites</Link >
+                <Link href="/jobs/myfavorites" className="text-gray-700 hover:text-blue-600">My favorites</Link >
                 <Link href="/applications/my" className="text-gray-700 hover:text-blue-600">My applications</Link >
-                <Link href="/myprofile" className="text-gray-700 hover:text-blue-600">My profile</Link>
+                <Link href={`/profile/${userInfo?.user_id}`} className="text-gray-700 hover:text-blue-600">My profile</Link>
                 </>
                 )       
             ) : (

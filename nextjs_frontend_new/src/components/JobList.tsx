@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import JobListItem from './JobListItem';
 import { Job } from '@/types';
 import apiService from '@/libs/apiService';
@@ -8,13 +8,15 @@ import apiService from '@/libs/apiService';
 export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
 
+  useEffect(() => {
+    setJobs(initialJobs);
+  }, [initialJobs]);
+
   const toggleFavorite = async (jobId: string) => {
-    try {
+    
       const response = await apiService.fetch_proxy('POST',`/job/toggle_favorite/${jobId}/`,'');
       setJobs(jobs.map(job => job.id === jobId ? response.data : job));
-    } catch (error) {
-      console.error("Erreur:", error);
-    }
+   
   };
 
   return (

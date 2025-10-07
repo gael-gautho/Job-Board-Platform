@@ -244,10 +244,12 @@ def search(request):
             )
         )
     else:
-        job = job.annotate( has_favorited=Value(False, output_field=BooleanField()) )
+        job = job.annotate(has_favorited=Value(False, output_field=BooleanField()) )
+
+
 
     if title:
-        job = Job.objects.filter(title__icontains = title)
+        job = job.filter(title__icontains = title)
     
     if location and location!="all":
         job = job.filter(location__icontains = location)

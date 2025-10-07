@@ -16,6 +16,8 @@ export default function SignupPage() {
   const [password1, setPassword1] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isRecruiter, setIsRecruiter] = useState<boolean>(false); 
+
 
   const submitSignup = async (e: FormEvent) => {
     e.preventDefault();
@@ -35,13 +37,15 @@ export default function SignupPage() {
       name: fullname,
       email: email,
       password1: password1,
-      password2: password2
+      password2: password2,
+      is_recruiter: isRecruiter, 
+
     };
 
     try {
       const response = await apiService.postWithoutToken('/signup/', JSON.stringify(formData));
       if (response.status === 201) {
-        setMessages([{ message: 'The user is registered. Please check your email to activate your account.', type: 'success' }]);
+        setMessages([{ message: 'The user is registered. You can go ahead and login', type: 'success' }]);
       } else if (response.status === 400) {
         const tmpErrors: Message[] = Object.values(response.data)
           .flat()
@@ -98,6 +102,21 @@ export default function SignupPage() {
               onChange={(e) => setPassword2(e.target.value)}
             />
           </div>
+
+          <div className="mb-4 flex items-center">
+            <input
+              type="checkbox"
+              id="isRecruiter"
+              className="mr-2"
+              checked={isRecruiter}
+              onChange={(e)=>setIsRecruiter(e.target.checked)}
+            />
+            <label htmlFor="isRecruiter" className="text-sm text-gray-700">
+              I am a recruiter
+            </label>
+          </div>
+
+
           {messages.length > 0 && (
             <div className="mb-4">
               {messages.map((msg, index) => (

@@ -60,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.photo:
             return settings.WEBSITE_URL + self.photo.url
         else:
-            return 'http://127.0.0.1:8000/media/photos/blank-profile.png'
+            return settings.WEBSITE_URL + '/media/photos/blank-profile.png'
 
 
     def get_resume(self):

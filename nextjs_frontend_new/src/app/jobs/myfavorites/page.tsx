@@ -11,7 +11,7 @@ export default async function MyfavoritesPage() {
 
     return (
     <div className="flex-1 px-6">
-        <h1 className="text-2xl font-bold mb-6">My favorites</h1>
+        <h1 className="text-2xl font-bold m-6">My favorites</h1>
     
         {jobs.length === 0 && <p>No Favorites </p>}
 

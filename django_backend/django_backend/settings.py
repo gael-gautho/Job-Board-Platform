@@ -12,7 +12,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
+
+
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,14 +29,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#tqz+5+rukw6^%f+^)$&p&2$t+5_)61v=2z6yir)-v(@b_r%ic'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.environ.get("DEBUG", default=0))
+print(DEBUG)
 
-ALLOWED_HOSTS = []
+WEBSITE_URL = os.environ.get("WEBSITE_URL")
 
-WEBSITE_URL = 'http://127.0.0.1:8000'
+frontend_urls = os.environ.get("FRONTEND_URLS")
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+] + [
+    url.strip().replace("https://", "").replace("http://", "").split("/")[0]
+    for url in frontend_urls.split(",")
+    if url.strip()
+]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
+    "http://localhost:3000",
+    "http://localhost:5173",
+] + [url.strip() for url in frontend_urls.split(",") if url.strip()]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+] + [url.strip() for url in frontend_urls.split(",") if url.strip()]
+
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https:\/\/job-board-platform.*\.vercel\.app$",
 ]
 
 AUTH_USER_MODEL = 'account.User'

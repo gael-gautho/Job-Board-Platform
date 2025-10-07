@@ -101,7 +101,9 @@ fetch_proxy : async function (method: string, url: string , data?: any): Promise
 
     const response = await fetch(`/api${url}`, options);
     
+    
     if (response.status === 401) {
+        console.log(typeof response.status)
         redirect('/login'); 
     }
 

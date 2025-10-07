@@ -40,7 +40,7 @@ export default async function MyApplicationsPage() {
                                     {app.status}
                                 </td>
                                 <td className="p-3">
-                                    <Link href={`/jobs/${app.job.id}`} className="text-blue-600 underline hover:text-blue-800">
+                                    <Link href={`/jobdetail/${app.job.id}`} className="text-blue-600 underline hover:text-blue-800">
                                         View
                                     </Link> 
                                 </td>
