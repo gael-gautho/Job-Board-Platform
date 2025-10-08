@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Navbar";
@@ -8,15 +8,15 @@ import { MyJwtPayload } from "@/types";
 import { cookies } from "next/headers";
 import { UserProvider } from "./userContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 export const metadata: Metadata = {
   title: "Let's Work",
@@ -50,7 +50,8 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`antialiased`}
       >
       <UserProvider userInfo ={{ user_id, is_recruiter }}>
         <Navbar key={user_id} />      

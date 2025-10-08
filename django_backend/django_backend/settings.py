@@ -38,6 +38,7 @@ frontend_urls = os.environ.get("FRONTEND_URLS")
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
+    "localhost",
 ] + [
     url.strip().replace("https://", "").replace("http://", "").split("/")[0]
     for url in frontend_urls.split(",")

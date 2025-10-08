@@ -23,7 +23,7 @@ export async function middleware(req: NextRequest) {
     // Pas d'access token mais on a un refresh token → essayer de rafraîchir
     if (refreshToken) {
         try {
-            const refreshResponse = await fetch('http://localhost:8000/refresh/', {
+            const refreshResponse =  await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/refresh/`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -56,6 +56,7 @@ export async function middleware(req: NextRequest) {
     
     if (req.nextUrl.pathname.startsWith('/api/')) {
         // Pour les appels API, on renvoie une erreur 401.
+        // Api car on veut intercepter uniquement le on click
         console.log(`[Middleware] API request to ${req.nextUrl.pathname} denied with 401.`);
         const response = NextResponse.json(
             { message: 'Authentication required' },
@@ -63,6 +64,8 @@ export async function middleware(req: NextRequest) {
         );
         response.cookies.delete('session_access_token');
         response.cookies.delete('session_refresh_token');
+
+        //const response = NextResponse.redirect(loginUrl); // cannot redirect because it's not the navigator who send the request
         return response;
 
     } else if ( !isPublicPath ) {
@@ -71,6 +74,8 @@ export async function middleware(req: NextRequest) {
         const loginUrl = new URL('/login', req.url);
         
         const response = NextResponse.redirect(loginUrl);
+
+        response.headers.set('Refresh', `0; url=${loginUrl.pathname}`);    
         response.cookies.delete('session_access_token');
         response.cookies.delete('session_refresh_token');
         return response;

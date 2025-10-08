@@ -104,7 +104,9 @@ fetch_proxy : async function (method: string, url: string , data?: any): Promise
     
     if (response.status === 401) {
         console.log(typeof response.status)
-        redirect('/login'); 
+        // redirect('/login');
+        window.location.href = '/login'; 
+ 
     }
 
     if (!response.ok) {
