@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#tqz+5+rukw6^%f+^)$&p&2$t+5_)61v=2z6yir)-v(@b_r%ic'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.environ.get("DEBUG", default=0))
+DEBUG = os.environ.get("DEBUG", "0") == "1"
 print(DEBUG)
 
 WEBSITE_URL = os.environ.get("WEBSITE_URL")
