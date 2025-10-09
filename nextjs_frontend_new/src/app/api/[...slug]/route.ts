@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-async function handleProxy(req: NextRequest, context: { params: { slug: string[] } }) {
+async function handleProxy(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
   const { params } = context;
   //const path = (await params).slug.join("/");
   
@@ -22,18 +22,18 @@ async function handleProxy(req: NextRequest, context: { params: { slug: string[]
 
 }
 
-export async function GET(req: NextRequest, context: { params: { slug: string[] } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
   return handleProxy(req, context);
 }
 
-export async function POST(req: NextRequest, context: { params: { slug: string[] } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
   return handleProxy(req, context);
 }
 
-export async function PUT(req: NextRequest, context: { params: { slug: string[] } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
   return handleProxy(req, context);
 }
 
-export async function DELETE(req: NextRequest, context: { params: { slug: string[] } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
   return handleProxy(req, context);
 }
