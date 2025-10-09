@@ -40,9 +40,13 @@ class Job(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     favorited_by = models.ManyToManyField(User, related_name='favorites', blank=True)
 
+    class Meta:
+        ordering = ('-created_at',)
+
     @property
     def total_applicants(self):
         return self.applications.count()
+
 
 
 
