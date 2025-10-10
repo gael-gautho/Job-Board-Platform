@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-async function handleProxy(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+async function handleProxy(req: NextRequest, context: { params: { slug: string[] } }) {
   const { params } = context;
   //const path = (await params).slug.join("/");
   
@@ -8,13 +8,16 @@ async function handleProxy(req: NextRequest, context: { params: Promise<{ slug: 
   const url = `${process.env.NEXT_PUBLIC_API_HOST}/${path}/`;
   console.log(req.cookies.get('session_access_token'))
 
+  const bd = await req.text()
+  console.log(bd)
+
   const res = await fetch(url, {
     method: req.method,
     headers: {
       "Content-Type": req.headers.get("Content-Type") || "application/json",
       "Authorization": `Bearer ${req.cookies.get('session_access_token')?.value}` || "",
     },
-    body: req.method === "GET" || req.method === "HEAD" ? undefined : await req.text(),
+    body: req.method === "GET" || req.method === "HEAD" ? undefined : bd, //await req.text(),
   });
 
   const data = await res.json();
@@ -22,18 +25,18 @@ async function handleProxy(req: NextRequest, context: { params: Promise<{ slug: 
 
 }
 
-export async function GET(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+export async function GET(req: NextRequest, context: { params: { slug: string[] } }) {
   return handleProxy(req, context);
 }
 
-export async function POST(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+export async function POST(req: NextRequest, context: { params: { slug: string[] } }) {
   return handleProxy(req, context);
 }
 
-export async function PUT(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+export async function PUT(req: NextRequest, context: { params: { slug: string[] } }) {
   return handleProxy(req, context);
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+export async function DELETE(req: NextRequest, context: { params: { slug: string[] } }) {
   return handleProxy(req, context);
 }

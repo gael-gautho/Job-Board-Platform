@@ -90,14 +90,25 @@ postWithoutToken: async function(url: string, data: any): Promise<any> {
 fetch_proxy : async function (method: string, url: string , data?: any): Promise<any> {
 
     const token = await getAccessToken();
-    const options: RequestInit = {
-      method,
-      headers: { 'Content-Type': 'application/json',
-                 'Authorization': `Bearer ${token}`
-    },
-      body: method === "GET" || method === "HEAD" ? undefined : JSON.stringify(data)
-    };
 
+    const options: RequestInit = { method };
+
+    const headers = new Headers();
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
+        }
+
+        if (data) {
+            if (data instanceof FormData) {
+                options.body = data;
+            } else {
+                headers.append('Content-Type', 'application/json');
+                options.body = JSON.stringify(data);
+            }
+        }
+        options.headers = headers;
+
+    
     const response = await fetch(`/api${url}`, options);
     
     

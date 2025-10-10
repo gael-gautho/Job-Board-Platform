@@ -52,32 +52,33 @@ export default function JobApplicationForm({
     setIsSubmitting(true);
     setSubmitStatus(null);
 
-
+    try {
       const formData = new FormData();
       formData.append('name', form.fullname);
       formData.append('email', form.email);
       formData.append('message', form.message);
       if (form.resume) { formData.append('resume', form.resume); }
 
-      const response = await apiService.fetch_proxy('POST', `/job/create_application/${jobId}`, formData,);
+      const response = await apiService.fetch_proxy( 'POST', `/job/create_application/${jobId}`, formData, );
 
-      if (response.status === 'created'){
+      setSubmitStatus({ success: true, message: "Application submitted successfully!" });
+      setHasApplied(true);
 
-        toast.success("Application submitted successfully!" );
-        setHasApplied(true);
-
-        setForm({
+      setForm({
         fullname: "",
         email: "",
         message: "",
         resume: null,
       });
-
-      } else {
-        toast.error("Failed to submit application. Please try later.")
-      }
-    
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      setSubmitStatus({
+        success: false,
+        message: "Failed to submit application. Please try again."
+      });
+    } finally {
       setIsSubmitting(false);
+    }
 
   };
 
