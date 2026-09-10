@@ -27,14 +27,14 @@ export default async function JobResultsPage({ searchParams }: JobResultsPagePro
     const jobs: Job[] = response.data;
 
     return (
-        <div className="max-w-7xl mx-auto py-12 px-4 flex gap-8">
+        <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 flex flex-col lg:flex-row gap-6 lg:gap-8">
             <JobFilters />
-            <main className="flex-1">
+            <main className="flex-1 min-w-0">
                 <h1 className="text-2xl font-bold mb-6">Job Results</h1>
                 <p className="text-gray-600 mb-6">
                     Results for: <strong>{title || "Any job"}</strong> in <strong>{location || "Any location"}</strong>
                 </p>
-                
+
                 {jobs?.length === 0 ? (
                     <p>No jobs found.</p>
                 ) : (

@@ -16,20 +16,20 @@ export default function JobsTable({ initialJobs }: JobsTableProps) {
     try {
       const response = await apiService.delete(`/job/delete_job/${id}`);
       console.log(response);
-      
+
       if (response.status === 'deleted') {
         setJobs(prev => prev.filter(job => job.id !== id));
         toast.success('Job deleted successfully')
       }
-    
+
     } catch (error) {
       console.error('Error deleting job:', error);
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <table className="w-full table-auto">
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 overflow-x-auto">
+      <table className="w-full table-auto min-w-[720px]">
         <thead>
           <tr className="bg-gray-200 text-left">
             <th className="p-3">Title</th>
@@ -53,8 +53,8 @@ export default function JobsTable({ initialJobs }: JobsTableProps) {
                   View
                 </Link>
               </td>
-              <td className="p-3 space-x-2">
-                <Link className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" href={`/jobs/edit/${job.id}`}>
+              <td className="p-3 space-x-2 whitespace-nowrap">
+                <Link className="inline-block px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" href={`/jobs/edit/${job.id}`}>
                   Edit
                 </Link>
                 <button 

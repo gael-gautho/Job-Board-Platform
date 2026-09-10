@@ -1,0 +1,2489 @@
+
+<directory_structure>
+src/
+  app/
+    api/
+      [...slug]/
+        route.ts
+    applications/
+      my/
+        page.tsx
+      review/
+        [jobId]/
+          page.tsx
+    jobdetail/
+      [id]/
+        page.tsx
+    jobs/
+      create/
+        page.tsx
+      edit/
+        [id]/
+          page.tsx
+      myfavorites/
+        page.tsx
+      myjobs/
+        page.tsx
+      search/
+        page.tsx
+    login/
+      page.tsx
+    profile/
+      [id]/
+        page.tsx
+    signup/
+      page.tsx
+    favicon.ico
+    globals.css
+    layout.tsx
+    page.tsx
+    userContext.tsx
+  components/
+    ApplicationsReviewClient.tsx
+    JobApplicationForm.tsx
+    JobFilters.tsx
+    JobForm.tsx
+    JobList.tsx
+    JobListItem.tsx
+    JobsTable.tsx
+    Navbar.tsx
+    ProfileForm.tsx
+    SearchBar.tsx
+  libs/
+    actions.ts
+    apiService.ts
+  middleware.ts
+  types.ts
+.gitignore
+eslint.config.mjs
+next.config.ts
+package.json
+postcss.config.mjs
+README.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/app/api/[...slug]/route.ts">
+import { NextRequest, NextResponse } from "next/server";
+
+async function handleProxy(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+  
+  const path = req.nextUrl.pathname.replace('/api', '');
+  const url = `${process.env.NEXT_PUBLIC_API_HOST}/${path}/`;
+  console.log(req.cookies.get('session_access_token'))
+
+  const res = await fetch(url, {
+    method: req.method,
+    headers: {
+      "Content-Type": req.headers.get("Content-Type") || "application/json",
+      "Authorization": `Bearer ${req.cookies.get('session_access_token')?.value}` || "",
+    },
+    body: req.method === "GET" || req.method === "HEAD" ? undefined : await req.text(),
+  });
+
+  const data = await res.json();
+  return NextResponse.json(data, { status: res.status });
+
+}
+
+export async function GET(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+
+  return handleProxy(req, context);
+}
+
+export async function POST(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+
+  return handleProxy(req, context);
+}
+
+export async function PUT(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+
+  return handleProxy(req, context);
+}
+
+export async function DELETE(req: NextRequest, context: { params: Promise<{ slug: string[] }> }) {
+
+  return handleProxy(req, context);
+}
+</file>
+
+<file path="src/app/applications/my/page.tsx">
+import apiService from "@/libs/apiService";
+import { Application } from "@/types";
+import Link from "next/link";
+
+
+export default async function MyApplicationsPage() {
+    
+    const tmpApplications = await apiService.get(`/job/get_myapplications/`)	
+    const applications : Application[] = tmpApplications.data
+    console.log(applications)
+
+    return (
+        <div className="min-h-screen bg-gray-100 p-8">
+            <h1 className="text-3xl font-bold mb-6">My Applications</h1>
+            {applications.length === 0 && <p>No Applications </p>}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+                <table className="w-full table-auto">
+                    <thead>
+                        <tr className="bg-gray-200 text-left">
+                            <th className="p-3">Job Title</th>
+                            <th className="p-3">Company</th>
+                            <th className="p-3">Date Applied</th>
+                            <th className="p-3">Status</th>
+                            <th className="p-3">View Job</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {applications.map((app) => (
+                            <tr key={app.id} className="border-b hover:bg-gray-50">
+                                <td className="p-3 font-medium">{app.job.title}</td>
+                                <td className="p-3">{app.job.company_name}</td>
+                                <td className="p-3">{app.created_at}</td>
+                                <td className={`p-3 font-semibold ${
+                                    app.status === "Accepted"
+                                        ? "text-green-600"
+                                        : app.status === "Rejected"
+                                        ? "text-red-600"
+                                        : "text-yellow-600"
+                                }`}>
+                                    {app.status}
+                                </td>
+                                <td className="p-3">
+                                    <Link href={`/jobdetail/${app.job.id}`} className="text-blue-600 underline hover:text-blue-800">
+                                        View
+                                    </Link> 
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+</file>
+
+<file path="src/app/applications/review/[jobId]/page.tsx">
+import apiService from "@/libs/apiService";
+import ApplicationsReviewClient from "@/components/ApplicationsReviewClient";
+import { Job, Application } from "@/types";
+
+interface ApplicationsReviewPageProps {
+  params: {
+    jobId: string;
+  };
+}
+
+export default async function ApplicationsReviewPage({ 
+  params 
+}: ApplicationsReviewPageProps) {
+
+const id = (await params).jobId
+const response = await apiService.get(`/job/get_jobapplications/${id}/`);
+const applications: Application[] = response.data || [];
+
+  return (
+    <div className="max-w-5xl mx-auto py-10 px-6">
+      <h1 className="text-3xl font-bold mb-6">Review Applications</h1>
+      
+      <ApplicationsReviewClient 
+        initialApplications={applications}
+        jobId={id}
+      />
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/jobdetail/[id]/page.tsx">
+import { Job } from '@/types';
+import apiService from '@/libs/apiService';
+import JobApplicationForm from '@/components/JobApplicationForm';
+import Link from 'next/link';
+
+export default async function JobDetailPage({ params }: { params: { id: string } }) {
+  const id = (await params).id;
+  const response = await apiService.get(`/job/get_jobdetail/${id}`);
+  const job : Job = response.data; 
+
+  return (
+<div className="max-w-7xl mx-auto py-12 px-4">
+    
+    <Link href="/" className="text-blue-600 hover:underline mb-6 inline-block">
+        ← Back to job listings
+    </Link>
+    {job && (
+
+    <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4 py-6">
+        <div className="col-span-3 space-y-4">
+			<div className="bg-white p-6 rounded-lg shadow mb-8">
+				<h1 className="text-3xl font-bold mb-2">{job.title}</h1>
+				<p className="text-gray-700 text-lg">{job.company_name} – {job.location}</p>
+				<div className="mt-3 flex flex-wrap gap-2">
+					<span className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">{job.employment_type}</span>
+					<span className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm">{job.experience_level}</span>
+					<span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-sm">{job.salary}</span>
+				</div>
+				<p className="text-gray-500 mt-3 text-sm">Posted on {job.created_at}</p>
+			</div>
+
+			<div className="bg-white p-6 rounded-lg shadow mb-8">
+				<h2 className="text-xl font-semibold mb-4">Job Description</h2>
+				<p className="text-gray-700 mb-4 whitespace-pre-line">{job.description}</p>
+
+				<h3 className="text-lg font-semibold mt-6 mb-3">Requirements</h3>
+				<ul className="list-disc pl-6 text-gray-700">
+					{job.requirements?.map((item, index) => (
+						<li key={index}>{item}</li>
+					))}
+				</ul>
+			</div>
+		</div>  
+
+      <JobApplicationForm jobId={id} initialHasApplied={job.has_applied} />
+    </div>
+)};
+    
+    
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/jobs/create/page.tsx">
+import JobForm from '@/components/JobForm';
+
+export default function NewJobPage() {
+    return <JobForm mode="create" />;
+}
+</file>
+
+<file path="src/app/jobs/edit/[id]/page.tsx">
+import JobForm from '@/components/JobForm';
+import apiService from '@/libs/apiService';
+import { Job } from '@/types';
+
+interface EditJobPageProps {
+    params: Promise<{ id: string }>;
+}
+
+
+export default async function EditJobPage({ params }: EditJobPageProps) {
+    const id = (await params).id;
+    const response = await apiService.get(`/job/get_jobdetail/${id}`);
+    const job : Job = response.data; 
+
+
+    return <JobForm mode="edit" jobId={id} initialData={job} />;
+}
+</file>
+
+<file path="src/app/jobs/myfavorites/page.tsx">
+import JobList from "@/components/JobList";
+import apiService from "@/libs/apiService";
+import { Job } from "@/types";
+
+export default async function MyfavoritesPage() {
+
+    const tmpJob = await apiService.get(`/job/get_myfavorites/`)	
+    const jobs : Job[] = tmpJob.data
+    console.log(jobs)
+
+
+    return (
+    <div className="flex-1 px-6">
+        <h1 className="text-2xl font-bold m-6">My favorites</h1>
+    
+        {jobs.length === 0 && <p>No Favorites </p>}
+
+        <div className="space-y-4 px-4">
+            <JobList initialJobs={jobs} />
+        </div>
+    </div>
+    );
+}
+</file>
+
+<file path="src/app/jobs/myjobs/page.tsx">
+import apiService from "@/libs/apiService";
+import JobsTable from "@/components/JobsTable";
+import { Job } from "@/types";
+
+
+export default async function RecruiterJobsPage() {
+    
+    const response = await apiService.get(`/job/get_myjobs/`);
+    const jobs : Job[] = response.data
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-3xl font-bold mb-6">My Job Posts</h1>
+      <JobsTable initialJobs={jobs} />
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/jobs/search/page.tsx">
+import JobList from '@/components/JobList';
+import JobFilters from '@/components/JobFilters';
+import apiService from '@/libs/apiService';
+import { Job } from '@/types';
+
+type JobResultsPageProps = {
+  searchParams: {
+    title?: string;
+    location?: string;
+    datePosted?: string;
+    experience?: string;
+    jobType?: string;
+  };
+};
+
+export default async function JobResultsPage({ searchParams }: JobResultsPageProps) {
+
+    const title = (await searchParams).title || "";
+    const location = (await searchParams).location || "";
+    const datePosted = (await searchParams).datePosted || "all";
+    const experience = (await searchParams).experience || "all";
+    const jobType = (await searchParams).jobType || "all";
+
+    const response = await apiService.get(
+      `/job/search/?title=${title}&location=${location}&jobType=${jobType}&experience=${experience}&datePosted=${datePosted}`
+    );
+    const jobs: Job[] = response.data;
+
+    return (
+        <div className="max-w-7xl mx-auto py-12 px-4 flex gap-8">
+            <JobFilters />
+            <main className="flex-1">
+                <h1 className="text-2xl font-bold mb-6">Job Results</h1>
+                <p className="text-gray-600 mb-6">
+                    Results for: <strong>{title || "Any job"}</strong> in <strong>{location || "Any location"}</strong>
+                </p>
+                
+                {jobs?.length === 0 ? (
+                    <p>No jobs found.</p>
+                ) : (
+                    <div className="space-y-4">
+                        <JobList initialJobs={jobs} />
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}
+</file>
+
+<file path="src/app/login/page.tsx">
+"use client"
+
+import Link from 'next/link';
+import { useState, FormEvent } from "react";
+import apiService from '@/libs/apiService';
+import { handleLogin } from '@/libs/actions';
+import { useRouter } from 'next/navigation';
+
+// Type pour les messages d'erreur/succès
+type Message = {
+  message: string;
+  type: 'error' | 'success';
+};
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const submitLogin = async (e: FormEvent) => {
+    e.preventDefault();
+    const tempMessages: Message[] = [];
+
+    if (!email.trim()) tempMessages.push({ message: 'Your e-mail is missing', type: 'error' });
+    if (!password) tempMessages.push({ message: 'Your password is missing', type: 'error' });
+
+    if (tempMessages.length > 0) {
+      setMessages(tempMessages);
+      return;
+    }
+
+    const formData = {
+      email: email,
+      password: password
+    };
+
+    try {
+      const response = await apiService.postWithoutToken('/login/', JSON.stringify(formData));
+      if (response.data.access) {
+        handleLogin(response.data.access, response.data.refresh);
+        setMessages([{ message: 'Login success! You will be redirected.', type: 'success' }]);
+        //router.push('/'); // Redirection après succès
+      } else {
+        const tmpErrors: Message[] = Object.values(response.data)
+          .map((error: any) => ({ message: error, type: 'error' }));
+        setMessages(tmpErrors);
+      }
+    } catch (error) {
+      setMessages([{ message: 'An error occurred. Please try again.', type: 'error' }]);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+        <form onSubmit={submitLogin}>
+          <div className="mb-4">
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full p-3 border border-gray-300 rounded"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="mb-6">
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full p-3 border border-gray-300 rounded"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {messages.length > 0 && (
+            <div className="mb-4">
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-3 mb-2 rounded ${
+                    msg.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                  }`}
+                >
+                  {msg.message}
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition"
+          >
+            Log In
+          </button>
+        </form>
+        <p className="mt-4 text-sm text-gray-600">
+          Don't have an account? <Link href="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/profile/[id]/page.tsx">
+import apiService from "@/libs/apiService";
+import { getUserInfo } from "@/libs/actions";
+import ProfileForm from "@/components/ProfileForm";
+import type { ProfileType } from "@/types"; 
+
+interface ProfilePageProps {
+    params: {
+        id: string;
+    };
+}
+
+export default async function ProfilePage({ params }: ProfilePageProps) {
+
+    const page_id  = (await params).id
+    const profileData: ProfileType = (await apiService.get(`/get_profile/${page_id}`)).data;
+    const {user_id} = await getUserInfo();
+
+    const isOwner = page_id === user_id;
+
+    return (
+        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4 py-6">
+            <ProfileForm initialProfile={profileData} isOwner={isOwner} />
+        </div>
+    );
+}
+</file>
+
+<file path="src/app/signup/page.tsx">
+"use client"
+
+import Link from 'next/link';
+import { useState, FormEvent } from "react";
+import apiService from '@/libs/apiService';
+
+// Type pour les messages d'erreur/succès
+type Message = {
+  message: string;
+  type: 'error' | 'success';
+};
+
+export default function SignupPage() {
+  const [fullname, setFullname] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password1, setPassword1] = useState<string>('');
+  const [password2, setPassword2] = useState<string>('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isRecruiter, setIsRecruiter] = useState<boolean>(false); 
+
+
+  const submitSignup = async (e: FormEvent) => {
+    e.preventDefault();
+    const tempMessages: Message[] = [];
+
+    if (!email.trim()) tempMessages.push({ message: 'Your e-mail is missing', type: 'error' });
+    if (!fullname.trim()) tempMessages.push({ message: 'Your name is missing', type: 'error' });
+    if (!password1) tempMessages.push({ message: 'Your password is missing', type: 'error' });
+    if (password1 !== password2) tempMessages.push({ message: 'The password does not match', type: 'error' });
+
+    if (tempMessages.length > 0) {
+      setMessages(tempMessages);
+      return;
+    }
+
+    const formData = {
+      name: fullname,
+      email: email,
+      password1: password1,
+      password2: password2,
+      is_recruiter: isRecruiter, 
+
+    };
+
+    try {
+      const response = await apiService.postWithoutToken('/signup/', JSON.stringify(formData));
+      if (response.status === 201) {
+        setMessages([{ message: 'The user is registered. You can go ahead and login', type: 'success' }]);
+      } else if (response.status === 400) {
+        const tmpErrors: Message[] = Object.values(response.data)
+          .flat()
+          .map((error: any) => ({ message: error, type: 'error' }));
+        setMessages(tmpErrors);
+      }
+    } catch (error) {
+      setMessages([{ message: 'An error occurred. Please try again.', type: 'error' }]);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 className="text-3xl font-bold mb-6 text-center">Create an Account</h1>
+        <form onSubmit={submitSignup}>
+          <div className="mb-4">
+            <label className="block mb-2 font-medium">Full Name</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              className="w-full p-3 border border-gray-300 rounded"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-medium">Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              className="w-full p-3 border border-gray-300 rounded"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block mb-2 font-medium">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full p-3 border border-gray-300 rounded"
+              value={password1}
+              onChange={(e) => setPassword1(e.target.value)}
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block mb-2 font-medium">Confirm Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full p-3 border border-gray-300 rounded"
+              value={password2}
+              onChange={(e) => setPassword2(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4 flex items-center">
+            <input
+              type="checkbox"
+              id="isRecruiter"
+              className="mr-2"
+              checked={isRecruiter}
+              onChange={(e)=>setIsRecruiter(e.target.checked)}
+            />
+            <label htmlFor="isRecruiter" className="text-sm text-gray-700">
+              I am a recruiter
+            </label>
+          </div>
+
+
+          {messages.length > 0 && (
+            <div className="mb-4">
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-3 mb-2 rounded ${
+                    msg.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                  }`}
+                >
+                  {msg.message}
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            Sign Up
+          </button>
+        </form>
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-600 hover:underline">Log in</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/globals.css">
+@import "tailwindcss";
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+// import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "sonner";
+import Navbar from "@/components/Navbar";
+import { jwtDecode } from "jwt-decode";
+import { MyJwtPayload } from "@/types";
+import { cookies } from "next/headers";
+import { UserProvider } from "./userContext";
+
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
+
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
+
+export const metadata: Metadata = {
+  title: "Let's Work",
+  description: "Generated by create next app",
+};
+
+
+  
+
+
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+
+
+  let user_id = "";
+  let is_recruiter = false;
+
+  const refreshToken = (await cookies()).get("session_refresh_token")?.value
+  
+  if (refreshToken) {
+    user_id = jwtDecode<MyJwtPayload>(refreshToken).user_id
+    is_recruiter = jwtDecode<MyJwtPayload>(refreshToken).is_recruiter
+  };
+
+
+
+  return (
+    <html lang="en">
+      <body
+        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`antialiased`}
+      >
+      <UserProvider userInfo ={{ user_id, is_recruiter }}>
+        <Navbar key={user_id} />      
+        {children}
+      </UserProvider>
+        
+        <Toaster position="top-right" richColors />
+
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+import apiService from '@/libs/apiService';
+import SearchBar from '@/components/SearchBar';
+import JobList from '@/components/JobList';
+import { Job } from '@/types';
+
+
+export default async function Home() {
+
+  const response = await apiService.get('/job/get_joblist/');
+  const jobs: Job[] = response.data
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero */}
+      <section className="py-16 px-4 text-center">
+        <h2 className="text-4xl font-bold text-gray-800 mb-4">
+          Find your next opportunity
+        </h2>
+        <p className="text-gray-600 mb-8">
+          Browse the latest job listings and apply in seconds.
+        </p>
+        <div className="max-w-3xl mx-auto">
+          <SearchBar
+          />
+        </div>
+      </section>
+
+      {/* Jobs */}
+      <section className="max-w-4xl mx-auto px-4 pb-16">
+        <h3 className="text-2xl font-semibold mb-6">Recent Job Listings</h3>
+        
+        <div className="space-y-4">
+        <JobList initialJobs={jobs} />
+        </div>
+      </section>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/userContext.tsx">
+'use client'
+import { createContext, useContext } from "react";
+import { UserInfo } from "@/types";
+
+const UserContext = createContext<UserInfo>({ user_id: "", is_recruiter: false });
+
+export function UserProvider({
+  children,
+  userInfo,
+}: {    
+  children: React.ReactNode;
+  userInfo: UserInfo;
+}) {
+  return (
+    <UserContext.Provider value={userInfo}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+
+export function useUser() {
+  const context = useContext(UserContext);
+  return context;
+}
+</file>
+
+<file path="src/components/ApplicationsReviewClient.tsx">
+"use client";
+
+import { useState } from "react";
+import apiService from "@/libs/apiService";
+import { Application } from "@/types";
+
+interface ApplicationsReviewClientProps {
+  initialApplications: Application[];
+  jobId: string;
+}
+
+export default function ApplicationsReviewClient({
+  initialApplications,
+  jobId
+}: ApplicationsReviewClientProps) {
+  const [applications, setApplications] = useState<Application[]>(initialApplications);
+  const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
+
+  const reviewApplication = async (
+    applicationId: string, 
+    status: "Accepted" | "Rejected"
+  ): Promise<void> => {
+    try {
+      setIsLoading(prev => ({ ...prev, [applicationId]: true }));
+
+      const response = await apiService.post( `/job/review_application/${applicationId}/${status}/`,'' );
+      
+      const updatedApp: Application = response.data;
+
+      setApplications(prev => {
+        const index = prev.findIndex(app => app.id === updatedApp.id);
+        if (index === -1) return prev;
+        
+        const updated = [...prev];
+        updated[index] = updatedApp;
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error reviewing application:", error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, [applicationId]: false }));
+    }
+  };
+
+  if (applications.length === 0) {
+    return (
+      <p className="text-gray-600">No applications found for this job.</p>
+    );
+  }
+
+  const jobInfo = applications[0]?.job;
+
+  return (
+    <>
+      {jobInfo && (
+        <p className="text-lg text-gray-600 mb-6">
+          {jobInfo.title} at{" "}
+          <span className="font-semibold">{jobInfo.company_name}</span>
+        </p>
+      )}
+
+      <div className="space-y-6">
+        {applications.map((app) => (
+          <div key={app.id} className="p-6 bg-white rounded-lg shadow border border-gray-200">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <h2 className="text-xl font-semibold">{app.name}</h2>
+                <p className="text-gray-600 text-sm">{app.email}</p>
+              </div>
+              <span
+                className={`px-3 py-1 rounded text-sm font-medium ${getStatusStyles(
+                  app.status
+                )}`}
+              >
+                {app.status}
+              </span>
+            </div>
+
+            <p className="text-gray-700 mb-3">{app.message}</p>
+            
+            <a
+              href={app.get_resume}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-sm hover:text-blue-800"
+            >
+              View Resume
+            </a>
+
+            {app.status === "Pending" && (
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => reviewApplication(app.id, "Accepted")}
+                  disabled={isLoading[app.id]}
+                  className={`px-4 py-2 bg-green-600 text-white rounded-lg transition-colors ${
+                    isLoading[app.id]
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-green-700"
+                  }`}
+                >
+                  {isLoading[app.id] ? "Processing..." : "Accept"}
+                </button>
+                <button
+                  onClick={() => reviewApplication(app.id, "Rejected")}
+                  disabled={isLoading[app.id]}
+                  className={`px-4 py-2 bg-red-600 text-white rounded-lg transition-colors ${
+                    isLoading[app.id]
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-red-700"
+                  }`}
+                >
+                  {isLoading[app.id] ? "Processing..." : "Reject"}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+  const getStatusStyles = (status: Application["status"]): string => {
+    switch (status) {
+      case "Accepted":
+        return "bg-green-100 text-green-700";
+      case "Rejected":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-yellow-100 text-yellow-700";
+    }
+  };
+</file>
+
+<file path="src/components/JobApplicationForm.tsx">
+"use client"
+
+import { useState, FormEvent, ChangeEvent } from "react";
+import apiService from "@/libs/apiService";
+import { toast } from "sonner";
+
+type FormData = {
+  fullname: string;
+  email: string;
+  message: string;
+  resume: File | null;
+};
+
+export default function JobApplicationForm({
+  jobId,
+  initialHasApplied
+}: {
+  jobId: string;
+  initialHasApplied: boolean
+}) {
+  const [form, setForm] = useState<FormData>({
+    fullname: "",
+    email: "",
+    message: "",
+    resume: null,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [hasApplied, setHasApplied] = useState(initialHasApplied);
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    
+    const file = e.target.files?.[0];
+    if (file) {
+    setForm(prev => ({ ...prev, resume: file }));
+    }
+  
+    
+    // if (e.target.files && e.target.files.length > 0 ) {
+    //   setForm(prev => ({ ...prev, resume: e.target.files[0] }));
+    // }
+  
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('name', form.fullname);
+      formData.append('email', form.email);
+      formData.append('message', form.message);
+      if (form.resume) { formData.append('resume', form.resume); }
+
+      const response = await apiService.fetch_proxy( 'POST', `/job/create_application/${jobId}`, formData, );
+
+      setSubmitStatus({ success: true, message: "Application submitted successfully!" });
+      setHasApplied(true);
+
+      setForm({
+        fullname: "",
+        email: "",
+        message: "",
+        resume: null,
+      });
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      setSubmitStatus({
+        success: false,
+        message: "Failed to submit application. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+
+  };
+
+  return (
+    <div className="col-span-1">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-lg shadow space-y-4 sticky top-20"
+      >
+        <h2 className="text-xl font-semibold mb-4">Apply for this job</h2>
+
+        {submitStatus && (
+          <div className={`p-3 rounded ${
+            submitStatus.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}>
+            {submitStatus.message}
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="fullname" className="block text-sm font-medium">Name</label>
+          <input
+            type="text"
+            id="fullname"
+            name="fullname"
+            value={form.fullname}
+            onChange={handleInputChange}
+            className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+            required
+            disabled={hasApplied}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={form.email}
+            onChange={handleInputChange}
+            className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+            required
+            disabled={hasApplied}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="message" className="block text-sm font-medium">Message</label>
+          <textarea
+            id="message"
+            name="message"
+            value={form.message}
+            onChange={handleInputChange}
+            className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+            rows={4}
+            required
+            disabled={hasApplied}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="resume" className="block text-sm font-medium">Resume (PDF/DOC)</label>
+          <input
+            type="file"
+            id="resume"
+            name="resume"
+            accept=".pdf,.doc,.docx"
+            onChange={handleFileChange}
+            className="mt-1 block w-full"
+            required={!hasApplied}
+            disabled={hasApplied}
+          />
+        </div>
+
+        {hasApplied ? (
+          <p className="text-gray-600 font-medium">✅ Already applied</p>
+        ) : (
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full px-6 py-3 rounded-lg ${
+              isSubmitting ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'
+            } text-white`}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Application'}
+          </button>
+        )}
+      </form>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/JobFilters.tsx">
+"use client"; 
+
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import type { FormEvent, ChangeEvent } from 'react';
+
+export default function JobFilters() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const [title, setTitle] = useState<string>(searchParams.get('title') || "");
+    const [location, setLocation] = useState<string>(searchParams.get('location') || "");
+    const [datePosted, setDatePosted] = useState<string>(searchParams.get('datePosted') || "all");
+    const [experience, setExperience] = useState<string>(searchParams.get('experience') || "all");
+    const [jobType, setJobType] = useState<string>(searchParams.get('jobType') || "all");
+
+    
+    const updateSearchParams = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('title', title);
+        params.set('location', location);
+        params.set('datePosted', datePosted);
+        params.set('experience', experience);
+        params.set('jobType', jobType);
+        
+        router.push(`/jobs/search?${params.toString()}`);
+    };
+
+    useEffect(() => {
+        const hasChanged = searchParams.get('datePosted') !== datePosted || 
+                           searchParams.get('experience') !== experience || 
+                           searchParams.get('jobType') !== jobType;
+        
+        if (hasChanged) {
+            updateSearchParams();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [datePosted, experience, jobType]);
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        updateSearchParams();
+    };
+
+    return (
+        <aside className="flex flex-col item-center space-y-4 w-64 bg-white p-6 rounded-lg shadow">
+            <form onSubmit={handleSubmit}>
+                <div className="flex space-x-4">
+                    <input
+                        type="search"
+                        placeholder="Find a job..."
+                        value={title}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                        className="w-full px-6 py-4 rounded-xl border"
+                    />
+                    <button type='submit' className="px-6 py-4 bg-blue-500 text-white rounded-xl">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <h2 className="text-lg font-semibold my-4">Filters</h2>
+
+                <div className="mb-4">
+                    <label className="block font-medium mb-2">Location</label>
+                    <input
+                        type="text"
+                        placeholder="e.g. Paris"
+                        value={location}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+                        className="w-full border border-gray-300 rounded p-2"
+                    />
+                </div>
+                
+                <div className="mb-4">
+                    <label className="block font-medium mb-2">Date posted</label>
+                    <select value={datePosted} onChange={(e: ChangeEvent<HTMLSelectElement>) => setDatePosted(e.target.value)} className="w-full border border-gray-300 rounded p-2">
+                        <option value="all">Any time</option>
+                        <option value="1">Last 24 hours</option>
+                        <option value="3">Last 3 days</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                    </select>
+                </div>
+                
+                 <div className="mb-4">
+                    <label className="block font-medium mb-2">Experience</label>
+                    <select value={experience} onChange={(e: ChangeEvent<HTMLSelectElement>) => setExperience(e.target.value)} className="w-full border border-gray-300 rounded p-2">
+                        <option value="all">All</option>
+                        <option value="Entry Level">Entry Level</option>
+                        <option value="Mid Level">Mid Level</option>
+                        <option value="Senior">Senior</option>
+                    </select>
+                </div>
+
+                <div className="mb-4">
+                    <label className="block font-medium mb-2">Employment Type</label>
+                    <select value={jobType} onChange={(e: ChangeEvent<HTMLSelectElement>) => setJobType(e.target.value)} className="w-full border border-gray-300 rounded p-2">
+                        <option value="all">All</option>
+                        <option value="Permanent">Permanent</option>
+                        <option value="Temporary">Temporary</option>
+                        <option value="Freelance">Freelance</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                </div>
+            </form>
+        </aside>
+    );
+}
+</file>
+
+<file path="src/components/JobForm.tsx">
+'use client';
+
+import { useState } from "react";
+import type { FormEvent, ChangeEvent } from 'react'; 
+import apiService from "@/libs/apiService";
+import { useRouter } from 'next/navigation';
+import { Job } from "@/types";
+
+interface Message {
+  message: string;
+  type: 'error' | 'success';
+}
+
+
+
+interface JobFormProps {
+    mode: 'create' | 'edit';
+    jobId?: string;
+    initialData?: Partial<Job>;
+}
+
+export default function JobForm({ mode, jobId, initialData }: JobFormProps) {
+    const router = useRouter();
+
+    // États du formulaire
+    const [title, setTitle] = useState<string>(initialData?.title || "");
+    const [companyName, setCompanyName] = useState<string>(initialData?.company_name || "");
+    const [location, setLocation] = useState<string>(initialData?.location || "");
+    const [salary, setSalary] = useState<string>(initialData?.salary || "");
+    const [employmentType, setEmploymentType] = useState<string>(initialData?.employment_type || "");
+    const [experienceLevel, setExperienceLevel] = useState<string>(initialData?.experience_level || "");
+    const [description, setDescription] = useState<string>(initialData?.description || "");
+    const [requirements, setRequirements] = useState<string>(
+        initialData?.requirements ? initialData.requirements.join("\n") : ""
+    );
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    
+
+    const validateForm = (): Message[] => {
+        const tempMessages: Message[] = [];
+        if (!title.trim()) tempMessages.push({ message: 'Title is missing', type: 'error' });
+        if (!companyName.trim()) tempMessages.push({ message: 'Company name is missing', type: 'error' });
+        if (!location.trim()) tempMessages.push({ message: 'Location is missing', type: 'error' });
+        if (!employmentType.trim()) tempMessages.push({ message: 'Employment type is missing', type: 'error' });
+        if (!experienceLevel.trim()) tempMessages.push({ message: 'Experience level is missing', type: 'error' });
+        if (!salary.trim()) tempMessages.push({ message: 'Salary is missing', type: 'error' });
+        if (!description.trim()) tempMessages.push({ message: 'Description is missing', type: 'error' });
+        if (!requirements.trim()) tempMessages.push({ message: 'Requirements are missing', type: 'error' });
+        return tempMessages;
+    };
+
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        setMessages([]); 
+
+        const validationErrors = validateForm();
+        if (validationErrors.length > 0) {
+            setMessages(validationErrors);
+            setIsLoading(false);
+            return;
+        }
+
+        const formData: Partial<Job> = {
+            title,
+            company_name: companyName,
+            location,
+            salary,
+            employment_type: employmentType,
+            experience_level: experienceLevel,
+            description,
+            requirements: requirements.split("\n").filter(line => line.trim() !== "")
+        };
+
+        try {
+            const endpoint = mode === 'create' 
+                ? '/job/create_job/' 
+                : `/job/edit_job/${jobId}/`;
+            
+            const method = mode === 'create' ? 'post' : 'put';
+
+            const response = await apiService[method](endpoint, formData);
+            
+            if (response.success) {
+                const successMessage = mode === 'create' 
+                    ? 'Job created! You will be redirected...'
+                    : 'Job updated! You will be redirected...';
+                
+                setMessages([{ message: successMessage, type: 'success' }]);
+                
+                setTimeout(() => {
+                    router.push('/jobs/myjobs');
+                }, 2000);
+            } else if (response.errors) {
+                const tmpErrors: Message[] = Object.values(response.errors).map((errorMsg: any) => ({
+                    message: errorMsg,
+                    type: 'error'
+                }));
+                setMessages(tmpErrors);
+            }
+        } catch (error) {
+            console.error("API call failed:", error);
+            setMessages([{ 
+                message: `An unexpected error occurred while ${mode === 'create' ? 'creating' : 'updating'} the job. Please try again.`, 
+                type: 'error' 
+            }]);
+        } finally {
+            if (!messages.some(m => m.type === 'success')) {
+               setIsLoading(false);
+            }
+        }
+    };
+
+    const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        handleSubmit();
+    };
+    
+    const pageTitle = mode === 'create' ? 'Create Job' : 'Edit Job';
+    const submitButtonText = mode === 'create' ? 'Create Job' : 'Update Job';
+    const loadingText = mode === 'create' ? 'Creating...' : 'Updating...';
+    
+    return (
+        <div className="py-10 px-6">
+            <h1 className="mb-6 text-2xl font-bold">{pageTitle}</h1>
+
+            <form className="space-y-4" onSubmit={handleFormSubmit}>
+                <div>
+                    <label className="block font-medium">Title</label>
+                    <input
+                        value={title}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {setTitle(e.target.value)}}
+                        type="text"
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        disabled={isLoading}
+                    />
+                </div>
+
+                <div>
+                    <label className="block font-medium">Company name</label>
+                    <input
+                        value={companyName}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {setCompanyName(e.target.value)}}
+                        type="text"
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        disabled={isLoading}
+                    />
+                </div>
+                
+                <div>
+                    <label className="block font-medium">Location</label>
+                    <input
+                        value={location}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {setLocation(e.target.value)}}
+                        type="text"
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        disabled={isLoading}
+                    />
+                </div>
+
+                <div>
+                    <label className="block font-medium">Employment type</label>
+                    <select 
+                        value={employmentType}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {setEmploymentType(e.target.value)}}
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        disabled={isLoading}
+                    >
+                        <option value="">Select type</option>
+                        <option value="Permanent">Permanent</option>
+                        <option value="Temporary">Temporary</option>
+                        <option value="Freelance">Freelance</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block font-medium">Experience level</label>
+                    <select 
+                        value={experienceLevel}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {setExperienceLevel(e.target.value)}}
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        disabled={isLoading}
+                    >
+                        <option value="">Select experience</option>
+                        <option value="Entry Level">Junior</option>
+                        <option value="Mid Level">Mid</option>
+                        <option value="Senior">Senior</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block font-medium">Salary</label>
+                    <input
+                        value={salary}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {setSalary(e.target.value)}}
+                        type="text"
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        disabled={isLoading}
+                    />
+                </div>
+
+                <div>
+                    <label className="block font-medium">Description</label>
+                    <textarea
+                        value={description}
+                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {setDescription(e.target.value)}}
+                        className="w-full mt-2 p-4 rounded-xl bg-gray-100"
+                        rows={5}
+                        disabled={isLoading}
+                    />
+                </div>
+
+                <div>
+                    <label className="block font-medium">Requirements</label>
+                    <textarea
+                        value={requirements}
+                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setRequirements(e.target.value)}
+                        className="w-full mt-2 p-4 font-mono bg-gray-100 outline-none resize-none rounded-xl"
+                        rows={6}
+                        placeholder="Enter one requirement per line..."
+                        disabled={isLoading}
+                    />
+                </div>
+
+                {messages.length > 0 && (
+                    <div className="mb-4">
+                        {messages.map((msg, index) => (
+                            <div
+                                key={index}
+                                className={`p-3 mb-2 rounded ${
+                                    msg.type === 'error'
+                                        ? 'bg-red-100 text-red-700'
+                                        : 'bg-green-100 text-green-700'
+                                }`}
+                            >
+                                {msg.message}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <button
+                    type="submit"
+                    className="py-4 px-6 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:bg-gray-400"
+                    disabled={isLoading}
+                >
+                    {isLoading ? loadingText : submitButtonText}
+                </button>
+            </form>
+        </div>
+    );
+}
+</file>
+
+<file path="src/components/JobList.tsx">
+"use client"
+
+import { useEffect, useState } from 'react';
+import JobListItem from './JobListItem';
+import { Job } from '@/types';
+import apiService from '@/libs/apiService';
+
+export default function JobList({ initialJobs }: { initialJobs: Job[] }) {
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
+
+  useEffect(() => {
+    setJobs(initialJobs);
+  }, [initialJobs]);
+
+  const toggleFavorite = async (jobId: string) => {
+    
+      const response = await apiService.fetch_proxy('POST',`/job/toggle_favorite/${jobId}/`,'');
+      setJobs(jobs.map(job => job.id === jobId ? response.data : job));
+   
+  };
+
+  return (
+    <>
+      {jobs?.map(job => (
+        <div key={job.id} className="flex justify-between bg-white p-5 rounded-lg shadow hover:shadow-md transition">
+          <JobListItem job={job} onToggleFavorite={toggleFavorite} />
+        </div>
+      ))}
+    </>
+  );
+}
+</file>
+
+<file path="src/components/JobListItem.tsx">
+"use client"
+
+import Link from 'next/link';
+import { Job } from '@/types';
+
+interface JobListItemProps {
+  job: Job;
+  onToggleFavorite: (jobId: string) => void;
+}
+
+export default function JobListItem({ job, onToggleFavorite }: JobListItemProps) {
+  return (
+    <>
+      <div>
+        <h2 className="text-xl font-semibold">{job.title}</h2>
+        <p className="text-gray-600">{job.company_name} – {job.location}</p>
+        <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
+          {job.experience_level} • {job.created_at}
+        </span>
+      </div>
+      <div className="flex flex-col items-center space-y-2">
+        <svg
+          className={`w-6 h-6 cursor-pointer ${job.has_favorited ? 'fill-red-600' : 'fill-none'}`}
+          onClick={() => onToggleFavorite(job.id)}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+        </svg>
+        <Link href={`/jobdetail/${job.id}`} className="py-2 px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
+          Details
+        </Link>
+      </div>
+    </>
+  );
+}
+</file>
+
+<file path="src/components/JobsTable.tsx">
+'use client'
+import { useState } from "react";
+import Link from "next/link";
+import apiService from "@/libs/apiService";
+import { Job } from "@/types";
+import { toast } from "sonner";
+
+interface JobsTableProps {
+  initialJobs: Job[];
+}
+
+export default function JobsTable({ initialJobs }: JobsTableProps) {
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
+
+  const handleDelete = async (id: string): Promise<void> => {
+    try {
+      const response = await apiService.delete(`/job/delete_job/${id}`);
+      console.log(response);
+      
+      if (response.status === 'deleted') {
+        setJobs(prev => prev.filter(job => job.id !== id));
+        toast.success('Job deleted successfully')
+      }
+    
+    } catch (error) {
+      console.error('Error deleting job:', error);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <table className="w-full table-auto">
+        <thead>
+          <tr className="bg-gray-200 text-left">
+            <th className="p-3">Title</th>
+            <th className="p-3">Date Posted</th>
+            <th className="p-3">Total Applicants</th>
+            <th className="p-3">View Applicants</th>
+            <th className="p-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs?.map((job) => (
+            <tr key={job.id} className="border-b hover:bg-gray-50">
+              <td className="p-3 font-medium">{job.title}</td>
+              <td className="p-3">{job.created_at}</td>
+              <td className="p-3">{job.total_applicants}</td>
+              <td className="p-3">
+                <Link 
+                  href={`/applications/review/${job.id}`} 
+                  className="text-blue-600 underline hover:text-blue-800"
+                >
+                  View
+                </Link>
+              </td>
+              <td className="p-3 space-x-2">
+                <Link className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" href={`/jobs/edit/${job.id}`}>
+                  Edit
+                </Link>
+                <button 
+                  onClick={() => handleDelete(job.id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/Navbar.tsx">
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { jwtDecode } from 'jwt-decode';
+import { MyJwtPayload } from "@/types";
+
+
+const Navbar = async () => {
+
+    const refreshToken = (await cookies()).get('session_refresh_token')?.value;
+    
+    let userInfo = null;
+
+    if (refreshToken) {
+        userInfo = jwtDecode<MyJwtPayload>(refreshToken)
+    }
+
+    console.log(userInfo)
+    
+    return (
+        <nav className="p-4 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <Link href="/" className="text-xl font-bold text-blue-600">Let's Work</Link>
+            <div className="space-x-6">
+            {refreshToken ? (
+                userInfo?.is_recruiter ? (
+                <>            
+                <Link href="/jobs/create" className="text-gray-700 hover:text-blue-600">Create Job</Link >
+                <Link href="/jobs/myjobs" className="text-gray-700 hover:text-blue-600">My Jobs</Link >
+                <Link href={`/profile/${userInfo?.user_id}`} className="text-gray-700 hover:text-blue-600">My profile</Link>
+                </>  ) : (
+                <>            
+                <Link href="/jobs/myfavorites" className="text-gray-700 hover:text-blue-600">My favorites</Link >
+                <Link href="/applications/my" className="text-gray-700 hover:text-blue-600">My applications</Link >
+                <Link href={`/profile/${userInfo?.user_id}`} className="text-gray-700 hover:text-blue-600">My profile</Link>
+                </>
+                )       
+            ) : (
+
+                <>
+                <Link href="/login" className="text-gray-700 hover:text-blue-600">Login</Link >
+                <Link href="/signup" className="text-gray-700 hover:text-blue-600">Signup</Link >
+                </>
+            )}
+            
+            
+            
+            </div>
+        </div>
+      </nav>
+    )
+}
+
+export default Navbar;
+</file>
+
+<file path="src/components/ProfileForm.tsx">
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import apiService from "@/libs/apiService";
+import type { ProfileType } from "@/types"; 
+import { toast } from "sonner";
+import { logoutUser } from "@/libs/actions";
+
+interface ProfileFormProps {
+    initialProfile: ProfileType;
+    isOwner: boolean;
+}
+
+export default function ProfileForm({ initialProfile, isOwner }: ProfileFormProps) {
+    const router = useRouter();
+    const [profile, setProfile] = useState<ProfileType>(initialProfile);
+    const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, files } = e.target;
+        setProfile((prev) => ({
+            ...prev,
+            [name]: files ? files[0] : value,
+        }));
+    };
+    
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setProfile((prev) => ({ ...prev, new_photo: file }));
+            setPreviewPhoto(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSaving(true);     
+
+        const formData = new FormData();
+
+        if (profile.new_photo) formData.append('photo', profile.new_photo);
+        if (profile.desired_position) formData.append('desired_position', profile.desired_position);
+        if (profile.experience) formData.append('experience', String(profile.experience));
+        if (profile.location) formData.append('location', profile.location);
+        if (profile.new_resume) formData.append('resume', profile.new_resume);
+
+        await apiService.post("/editprofile/", formData);
+        toast.success('Profile updated successfully');
+
+        setIsSaving(false);     
+        
+        //window.location.reload()
+        router.refresh();
+    };
+
+
+    const handleLogout = async () => {
+    
+        setIsLoading(true);     
+        await logoutUser();
+        toast.success('Successfully logged out');
+        setIsLoading(false);
+
+        //window.location.href = '/';
+                    
+        };
+
+    return (
+        <>
+            <div className="col-span-1">
+                <div className="p-4 bg-white border border-gray-200 text-center rounded-lg">
+                    <img
+                        src={previewPhoto || profile.get_photo}
+                        alt="Profile"
+                        className="w-28 h-28 rounded-full object-cover mx-auto mb-6"
+                    />
+                    <p className="font-semibold">{profile.name}</p>
+                    <p className="text-sm text-gray-500">{profile.email}</p>
+                    
+                    {isOwner && (
+                        <div className="mt-6 space-y-3">
+                            <label className="w-full block">
+                                <span className="w-full inline-block py-2 bg-blue-600 text-white rounded-lg text-xs cursor-pointer hover:bg-blue-700">
+                                    Edit photo
+                                </span>
+                                <input onChange={handlePhotoChange} type="file" name="new_photo" accept="image/*" className="hidden" />
+                            </label>
+                            <button 
+                            onClick={handleLogout}
+                            className="w-full py-2 bg-red-600 text-white rounded-lg text-xs"
+                            disabled = {isLoading}
+                            >                                
+                            {isLoading ? "Logging out" : "Logout"}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="col-span-3 space-y-4">
+                <div className="p-6 bg-white border border-gray-200 rounded-lg">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label htmlFor="desired_position" className="block text-sm font-medium mb-1">Desired Position</label>
+                            <input
+                                id="desired_position"
+                                type="text"
+                                name="desired_position"
+                                value={profile.desired_position || ""}
+                                onChange={handleChange}
+                                disabled={!isOwner}
+                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm py-3 px-4 text-base disabled:bg-gray-100"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                Years of Experience
+                            </label>
+                            <input
+                                type="number"
+                                name="experience"
+                                value={profile.experience || ""}
+                                onChange={handleChange}
+                                disabled={!isOwner}
+                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm py-3 px-4 text-base disabled:bg-gray-100"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">
+                                Location
+                            </label>
+                            <input
+                                type="text"
+                                name="location"
+                                value={profile.location || ""}
+                                onChange={handleChange}
+                                disabled={!isOwner}
+                                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm py-3 px-4 text-base disabled:bg-gray-100"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Resume</label>
+                            {profile.get_resume && (
+                                <a href={profile.get_resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                                    View Resume
+                                </a>
+                            )}
+                            {isOwner && (
+                                <input type="file" name="new_resume" accept=".pdf,.doc,.docx" onChange={handleChange} className="mt-1 block w-full py-2 text-base" />
+                            )}
+                        </div>
+                        
+                        {isOwner && (
+                            <button type="submit" 
+                            className="mt-8 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-base font-medium"
+                            disabled = {isSaving}                            
+                            >
+                                {isSaving ? "Saving changes" : "Save changes"}
+                            </button>
+                        )}
+                    </form>
+                </div>
+            </div>
+        </>
+    );
+}
+</file>
+
+<file path="src/components/SearchBar.tsx">
+"use client"
+
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+export default function SearchBar() {
+  const router = useRouter();
+  const [title, setTitle] = useState('');
+  const [location, setLocation] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/jobs/search?title=${encodeURIComponent(title)}&location=${encodeURIComponent(location)}`);
+  };
+
+  return (
+    <form className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+      <input
+        type="text"
+        placeholder="Job title or keyword"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        className="w-full sm:w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        type="text"
+        placeholder="Location"
+        value={location}
+        onChange={e => setLocation(e.target.value)}
+        className="w-full sm:w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        onClick={handleSubmit}
+        className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+      >
+        Search
+      </button>
+    </form>
+  );
+}
+</file>
+
+<file path="src/libs/actions.ts">
+'use server'
+import { MyJwtPayload } from '@/types';
+import { jwtDecode } from 'jwt-decode';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+
+
+export async function handleLogin(accessToken: string, refreshToken: string) {
+    (await cookies()).set('session_access_token', accessToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 60 * 1, // 1 minutes
+        path: '/'
+    });
+
+    (await cookies()).set('session_refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 60 * 60 * 24 * 1, // One day
+        path: '/'
+    });
+    
+    redirect('/');
+}
+
+export async function getAccessToken() {
+    let accessToken = (await cookies()).get('session_access_token')?.value;
+    return accessToken;
+}
+
+export async function getUserInfo() {
+    let user_id = "";
+    let is_recruiter = false;
+
+    const refreshToken = (await cookies()).get("session_refresh_token")?.value
+    
+    if (refreshToken) {
+    user_id = jwtDecode<MyJwtPayload>(refreshToken).user_id
+    is_recruiter = jwtDecode<MyJwtPayload>(refreshToken).is_recruiter
+    };
+    
+    return {user_id, is_recruiter};
+}
+
+export async function logoutUser() {
+  const cookieStore = await cookies();
+  cookieStore.delete('session_access_token');
+  cookieStore.delete('session_refresh_token');
+  redirect('/');
+}
+</file>
+
+<file path="src/libs/apiService.ts">
+import { getAccessToken } from "../libs/actions";
+import { redirect } from 'next/navigation';
+
+
+const apiService = {
+
+async _request(url: string, method: string, data?: any): Promise<any> {
+        const token = await getAccessToken();
+        const options: RequestInit = { method };
+
+        const headers = new Headers();
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
+        }
+
+        if (data) {
+            if (data instanceof FormData) {
+                options.body = data;
+            } else {
+                headers.append('Content-Type', 'application/json');
+                options.body = JSON.stringify(data);
+            }
+        }
+        options.headers = headers;
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, options);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Erreur inconnue' }));
+                throw new Error(`Erreur HTTP ${response.status}: ${errorData.detail || errorData.message}`);
+            }
+
+            if (response.status === 204) { 
+                return null;
+            }
+
+            const json = await response.json();
+            console.log('Response:', json);
+            return json;
+
+        } catch (error) {
+            console.error(`Erreur de l'API (${method} ${url}):`, error);
+            throw error; 
+        }
+    },
+
+    get: function(url: string): Promise<any> {
+        return this._request(url, 'GET');
+    },
+
+    post: function(url: string, data: any): Promise<any> {
+        return this._request(url, 'POST', data);
+    },
+
+    delete: function(url: string): Promise<any> {
+        return this._request(url, 'DELETE');
+    },
+    
+    put: function(url: string, data: any): Promise<any> {
+        return this._request(url, 'PUT', data);
+    },
+
+
+postWithoutToken: async function(url: string, data: any): Promise<any> {
+
+    return new Promise((resolve, reject) => {
+        fetch(`${process.env.NEXT_PUBLIC_API_HOST}${url}`, {
+            method: 'POST',
+            body: data,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(async(response) => {
+                console.log('Response:', response);
+                const parsedResponse = await response.json();
+                resolve({
+                status: response.status,
+                data: parsedResponse
+                });
+            })
+            .catch((error => {
+                reject(error);
+            }))
+    })
+},
+
+fetch_proxy : async function (method: string, url: string , data?: any): Promise<any> {
+
+    const token = await getAccessToken();
+
+    const options: RequestInit = { method };
+
+    const headers = new Headers();
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
+        }
+
+        if (data) {
+            if (data instanceof FormData) {
+                options.body = data;
+            } else {
+                headers.append('Content-Type', 'application/json');
+                options.body = JSON.stringify(data);
+            }
+        }
+        options.headers = headers;
+
+    
+    const response = await fetch(`/api${url}`, options);
+    
+    
+    if (response.status === 401) {
+        console.log(typeof response.status)
+        // redirect('/login');
+        window.location.href = '/login'; 
+ 
+    }
+
+    if (!response.ok) {
+        // Gérer les autres erreurs HTTP (404, 500, etc.)
+        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+        const error = new Error(`Erreur HTTP ${response.status}: ${errorData.message || response.statusText}`);
+        throw error;
+    }
+    
+    // Si la réponse peut être vide (ex: statut 204 No Content)
+    if (response.status === 204) {
+        return null;
+    }
+
+    const json = await response.json();
+    console.log('Response:', json);
+    return json;
+
+  },
+
+}
+
+export default apiService;
+</file>
+
+<file path="src/middleware.ts">
+// middleware.js
+import { jwtDecode } from 'jwt-decode';
+import { NextRequest, NextResponse } from 'next/server';
+import { MyJwtPayload } from './types';
+
+const publicPaths = ['/', '/jobs/[id]', '/jobs/search'];
+
+export async function middleware(req: NextRequest) {
+    
+    const path = req.nextUrl.pathname;
+    const isPublicPath = publicPaths.includes(path) || path.startsWith('/jobdetail/');
+
+    let accessToken = req.cookies.get('session_access_token')?.value;
+    const refreshToken = req.cookies.get('session_refresh_token')?.value;
+
+    console.log("-----in middleware")
+    // Si on a déjà un access token valide → continuer
+    if (accessToken && !isExpired(accessToken)) {
+        return NextResponse.next();
+    }
+    
+    console.log("-----invalid access token")
+    // Pas d'access token mais on a un refresh token → essayer de rafraîchir
+    if (refreshToken) {
+        try {
+            const refreshResponse =  await fetch(`${process.env.NEXT_PUBLIC_API_HOST}/refresh/`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refresh: refreshToken })
+            });
+
+            const json = await refreshResponse.json();
+
+            if (json.access) {
+
+                const res = NextResponse.redirect(req.url);
+                res.cookies.set('session_access_token', json.access, {
+                    httpOnly: true,
+                    secure: false, 
+                    maxAge: 60 * 1, // 1 min
+                    path: '/'
+                });
+
+                return res;
+            } 
+        } catch (error) {
+            console.error('Erreur refresh token:', error);
+            // Tomber dans le cas d'erreur 401 plus bas
+        }
+    }
+
+    // Pas de refresh token → redirection login
+    
+    if (req.nextUrl.pathname.startsWith('/api/')) {
+        // Pour les appels API, on renvoie une erreur 401.
+        // Api car on veut intercepter uniquement le on click
+        console.log(`[Middleware] API request to ${req.nextUrl.pathname} denied with 401.`);
+        const response = NextResponse.json(
+            { message: 'Authentication required' },
+            { status: 401 }
+        );
+        response.cookies.delete('session_access_token');
+        response.cookies.delete('session_refresh_token');
+
+        //const response = NextResponse.redirect(loginUrl); // cannot redirect because it's not the navigator who send the request
+        return response;
+
+    } else if ( !isPublicPath ) {
+        // Pour les navigations de page, on redirige vers le login.
+        console.log(`[Middleware] Page navigation to ${req.nextUrl.pathname} redirected to /login.`);
+        const loginUrl = new URL('/login', req.url);
+        
+        const response = NextResponse.redirect(loginUrl);
+
+        response.headers.set('Refresh', `0; url=${loginUrl.pathname}`);    
+        response.cookies.delete('session_access_token');
+        response.cookies.delete('session_refresh_token');
+        return response;
+    }
+
+    return NextResponse.next();
+
+}
+
+function isExpired(token: string) {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
+
+
+export const config = {
+    matcher: [
+        '/',
+        '/api/:path*',
+        '/jobs/:path*',
+        '/jobdetail/:path*',
+        '/profile/:path*',
+        '/applications/:path*'
+    ],
+};
+</file>
+
+<file path="src/types.ts">
+export interface Job {
+  id: string;
+  title: string;
+  company_name: string;
+  location: string;
+  employment_type: string;
+  experience_level: string;
+  salary: string;
+  created_at: string;
+  description: string;
+  requirements: string[];
+  has_applied: boolean;
+  has_favorited: boolean;
+  total_applicants: number;
+
+}
+
+
+export interface Application {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+  status: string;
+  get_resume: string
+  job: Job;
+  
+}
+
+
+export interface MyJwtPayload {
+  user_id: string;
+  is_recruiter: boolean; 
+}
+
+
+export interface UserInfo{
+  user_id: string;
+  is_recruiter: boolean;
+}
+
+
+export interface ProfileType {
+    name: string;
+    email: string;
+    get_photo?: string;
+    desired_position?: string;
+    experience?: number;
+    location?: string;
+    get_resume?: string;
+    new_photo?: File;
+    new_resume?: File;
+}
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="eslint.config.mjs">
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+    ],
+  },
+];
+
+export default eslintConfig;
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+      },{
+        protocol: "https",
+        hostname: "https://todokevin4.pythonanywhere.com/",
+      },
+    ],
+  }
+
+};
+
+export default nextConfig;
+</file>
+
+<file path="package.json">
+{
+  "name": "nextjs_frontend_new",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "jwt-decode": "^4.0.0",
+    "next": "15.5.9",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "sonner": "^2.0.7"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="postcss.config.mjs">
+const config = {
+  plugins: ["@tailwindcss/postcss"],
+};
+
+export default config;
+</file>
+
+<file path="README.md">
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+</files>

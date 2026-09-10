@@ -10,16 +10,16 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
   return (
 <div className="max-w-7xl mx-auto py-12 px-4">
-    
+
     <Link href="/" className="text-blue-600 hover:underline mb-6 inline-block">
         ← Back to job listings
     </Link>
     {job && (
 
-    <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4 py-6">
-        <div className="col-span-3 space-y-4">
-			<div className="bg-white p-6 rounded-lg shadow mb-8">
-				<h1 className="text-3xl font-bold mb-2">{job.title}</h1>
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-4 py-6">
+        <div className="lg:col-span-3 space-y-4">
+			<div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
+				<h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
 				<p className="text-gray-700 text-lg">{job.company_name} – {job.location}</p>
 				<div className="mt-3 flex flex-wrap gap-2">
 					<span className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">{job.employment_type}</span>
@@ -29,7 +29,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 				<p className="text-gray-500 mt-3 text-sm">Posted on {job.created_at}</p>
 			</div>
 
-			<div className="bg-white p-6 rounded-lg shadow mb-8">
+			<div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
 				<h2 className="text-xl font-semibold mb-4">Job Description</h2>
 				<p className="text-gray-700 mb-4 whitespace-pre-line">{job.description}</p>
 
@@ -43,10 +43,8 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 		</div>  
 
       <JobApplicationForm jobId={id} initialHasApplied={job.has_applied} />
-    </div>
-)};
-    
-    
+    </div>)};   
+
     </div>
   );
 }

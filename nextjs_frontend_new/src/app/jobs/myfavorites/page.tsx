@@ -10,12 +10,12 @@ export default async function MyfavoritesPage() {
 
 
     return (
-    <div className="flex-1 px-6">
-        <h1 className="text-2xl font-bold m-6">My favorites</h1>
-    
+    <div className="flex-1 px-4 sm:px-6">
+        <h1 className="text-2xl font-bold m-4 sm:m-6">My favorites</h1>
+
         {jobs.length === 0 && <p>No Favorites </p>}
 
-        <div className="space-y-4 px-4">
+        <div className="space-y-4 px-0 sm:px-4">
             <JobList initialJobs={jobs} />
         </div>
     </div>

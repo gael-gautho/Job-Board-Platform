@@ -24,13 +24,13 @@ export default function ApplicationsReviewClient({
       setIsLoading(prev => ({ ...prev, [applicationId]: true }));
 
       const response = await apiService.post( `/job/review_application/${applicationId}/${status}/`,'' );
-      
+
       const updatedApp: Application = response.data;
 
       setApplications(prev => {
         const index = prev.findIndex(app => app.id === updatedApp.id);
         if (index === -1) return prev;
-        
+
         const updated = [...prev];
         updated[index] = updatedApp;
         return updated;
@@ -61,14 +61,14 @@ export default function ApplicationsReviewClient({
 
       <div className="space-y-6">
         {applications.map((app) => (
-          <div key={app.id} className="p-6 bg-white rounded-lg shadow border border-gray-200">
-            <div className="flex justify-between items-center mb-3">
-              <div>
-                <h2 className="text-xl font-semibold">{app.name}</h2>
-                <p className="text-gray-600 text-sm">{app.email}</p>
+          <div key={app.id} className="p-4 sm:p-6 bg-white rounded-lg shadow border border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-semibold">{app.name}</h2>
+                <p className="text-gray-600 text-sm break-all">{app.email}</p>
               </div>
               <span
-                className={`px-3 py-1 rounded text-sm font-medium ${getStatusStyles(
+                className={`self-start sm:self-auto px-3 py-1 rounded text-sm font-medium shrink-0 ${getStatusStyles(
                   app.status
                 )}`}
               >
@@ -76,19 +76,19 @@ export default function ApplicationsReviewClient({
               </span>
             </div>
 
-            <p className="text-gray-700 mb-3">{app.message}</p>
-            
+            <p className="text-gray-700 mb-3 break-words">{app.message}</p>
+
             <a
               href={app.get_resume}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline text-sm hover:text-blue-800"
+              className="text-blue-600 underline text-sm hover:text-blue-800 break-all"
             >
               View Resume
             </a>
 
             {app.status === "Pending" && (
-              <div className="mt-4 flex gap-3">
+              <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   onClick={() => reviewApplication(app.id, "Accepted")}
                   disabled={isLoading[app.id]}

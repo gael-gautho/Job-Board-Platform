@@ -17,9 +17,9 @@ const response = await apiService.get(`/job/get_jobapplications/${id}/`);
 const applications: Application[] = response.data || [];
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-6">
-      <h1 className="text-3xl font-bold mb-6">Review Applications</h1>
-      
+    <div className="max-w-5xl mx-auto py-8 sm:py-10 px-4 sm:px-6">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Review Applications</h1>
+
       <ApplicationsReviewClient 
         initialApplications={applications}
         jobId={id}

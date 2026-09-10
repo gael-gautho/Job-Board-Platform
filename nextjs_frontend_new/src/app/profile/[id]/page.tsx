@@ -18,7 +18,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const isOwner = page_id === user_id;
 
     return (
-        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4 py-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-4 py-6 px-4">
             <ProfileForm initialProfile={profileData} isOwner={isOwner} />
         </div>
     );

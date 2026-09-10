@@ -4,17 +4,17 @@ import Link from "next/link";
 
 
 export default async function MyApplicationsPage() {
-    
+
     const tmpApplications = await apiService.get(`/job/get_myapplications/`)	
     const applications : Application[] = tmpApplications.data
     console.log(applications)
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
-            <h1 className="text-3xl font-bold mb-6">My Applications</h1>
+        <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6">My Applications</h1>
             {applications.length === 0 && <p>No Applications </p>}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-                <table className="w-full table-auto">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 overflow-x-auto">
+                <table className="w-full table-auto min-w-[640px]">
                     <thead>
                         <tr className="bg-gray-200 text-left">
                             <th className="p-3">Job Title</th>

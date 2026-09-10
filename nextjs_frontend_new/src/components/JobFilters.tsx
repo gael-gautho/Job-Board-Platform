@@ -14,7 +14,7 @@ export default function JobFilters() {
     const [experience, setExperience] = useState<string>(searchParams.get('experience') || "all");
     const [jobType, setJobType] = useState<string>(searchParams.get('jobType') || "all");
 
-    
+
     const updateSearchParams = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('title', title);
@@ -22,7 +22,7 @@ export default function JobFilters() {
         params.set('datePosted', datePosted);
         params.set('experience', experience);
         params.set('jobType', jobType);
-        
+
         router.push(`/jobs/search?${params.toString()}`);
     };
 
@@ -30,7 +30,7 @@ export default function JobFilters() {
         const hasChanged = searchParams.get('datePosted') !== datePosted || 
                            searchParams.get('experience') !== experience || 
                            searchParams.get('jobType') !== jobType;
-        
+
         if (hasChanged) {
             updateSearchParams();
         }
@@ -43,7 +43,7 @@ export default function JobFilters() {
     };
 
     return (
-        <aside className="flex flex-col item-center space-y-4 w-64 bg-white p-6 rounded-lg shadow">
+        <aside className="flex flex-col item-center space-y-4 w-full lg:w-64 lg:shrink-0 bg-white p-4 sm:p-6 rounded-lg shadow">
             <form onSubmit={handleSubmit}>
                 <div className="flex space-x-4">
                     <input
@@ -51,9 +51,9 @@ export default function JobFilters() {
                         placeholder="Find a job..."
                         value={title}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                        className="w-full px-6 py-4 rounded-xl border"
+                        className="w-full px-4 sm:px-6 py-3 sm:py-4 rounded-xl border"
                     />
-                    <button type='submit' className="px-6 py-4 bg-blue-500 text-white rounded-xl">
+                    <button type='submit' className="px-4 sm:px-6 py-3 sm:py-4 bg-blue-500 text-white rounded-xl shrink-0">
                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                         </svg>
@@ -72,7 +72,7 @@ export default function JobFilters() {
                         className="w-full border border-gray-300 rounded p-2"
                     />
                 </div>
-                
+
                 <div className="mb-4">
                     <label className="block font-medium mb-2">Date posted</label>
                     <select value={datePosted} onChange={(e: ChangeEvent<HTMLSelectElement>) => setDatePosted(e.target.value)} className="w-full border border-gray-300 rounded p-2">
@@ -83,7 +83,7 @@ export default function JobFilters() {
                         <option value="30">Last 30 days</option>
                     </select>
                 </div>
-                
+
                  <div className="mb-4">
                     <label className="block font-medium mb-2">Experience</label>
                     <select value={experience} onChange={(e: ChangeEvent<HTMLSelectElement>) => setExperience(e.target.value)} className="w-full border border-gray-300 rounded p-2">
